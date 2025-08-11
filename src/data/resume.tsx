@@ -8,21 +8,28 @@ export const DATA = {
 	location: 'Quận 12, Ho Chi Minh City, Vietnam',
 	locationLink: 'https://www.google.com/maps/place/quan12',
 	description:
-		'Software Engineer specializing in AI/ML, with a focus on integrating the latest AI technologies and LLMs into software development and architecture.',
+		'Software Engineer specializing in Applied AI, with a focus on integrating the latest AI technologies and LLMs into software development and architecture.',
 	summary:
-		"Hi, I'm Lam Tran or you can call me Hugo. I'm a software engineer. I love programming and building software. Join me as we explore coding tips, tutorials, and real-world stories to sharpen our skills and stay inspired in the ever-evolving world of programming. Wish you best of luck ✨ and happy coding 🚀",
+		"I'm Tung Lam Tran or you can call me Hugo. I'm a software engineer from Vietnam. I love programming and building software. Join me as we explore coding tips, tutorials, and real-world stories to sharpen our skills and stay inspired in the ever-evolving world of programming. Wish you best of luck ✨ and happy coding 🚀",
 	avatarUrl: '/me.png',
 	skills: [
-		'Full-Stack Development',
+		'Full-Stack Web Development',
 		'Python',
 		'Node.js',
 		'React.js',
 		'System Architecture',
+		'Javascript',
 		'TypeScript',
 		'Next.js',
-		'AI/ML',
+		'LLM Frameworks',
 		'MongoDB',
+		'SQL - NoSQL DB',
 		'Loopback4',
+		'NestJS',
+		'AWS services',
+		'Background Jobs',
+		'Agile Development',
+		'Realtime Application',
 	],
 	navbar: [
 		{ href: '/', icon: HomeIcon, label: 'Home' },
@@ -104,6 +111,19 @@ export const DATA = {
 			description:
 				'Developed a tool for designers to create wiring diagrams efficiently. Leveraged AI to optimize layout and spacing between circuit elements.',
 		},
+		{
+			company: 'Medlaw Vietnam',
+			href: 'https://www.medlaw.vn/',
+			badges: ['Freelance'],
+			location: 'Ho Chi Minh City, Vietnam',
+			title: 'Team Lead',
+			logoUrl:
+				'https://medlaw.vn/wp-content/uploads/2021/01/image_2021_01_10T10_18_53_678Z.png',
+			start: 'Jan 2022',
+			end: 'April 2022',
+			description:
+				'Developed a tool for designers to create wiring diagrams efficiently. Leveraged AI to optimize layout and spacing between circuit elements.',
+		},
 	],
 	education: [
 		{
@@ -118,40 +138,30 @@ export const DATA = {
 	],
 	projects: [
 		{
-			title: 'Mozze',
-			href: '#',
-			dates: 'Oct 2024 – Present',
+			title: 'Udeffy',
+			href: 'https://udeffy.com',
+			dates: 'Jan 2025 – Present',
 			active: true,
 			description:
-				'Personalized profiles for showcasing projects, skills, and experiences. Milestone tracking and community engagement.',
-			technologies: ['Next.js', 'Tailwind CSS', 'TypeScript', 'AI/ML'],
-			links: [],
-			image: '',
-			video: '',
-		},
-		{
-			title: 'Tool for Content Management',
-			href: '#',
-			dates: 'May 2024 – Aug 2024',
-			active: false,
-			description:
-				'AI-powered tool for managing and generating content/blog posts. Boosts performance in writing and marketing.',
-			technologies: ['TypeScript', 'Next.js', 'AI/ML'],
-			links: [],
-			image: '',
-			video: '',
-		},
-		{
-			title: 'ZapyAI',
-			href: 'https://zapyai.com',
-			dates: '',
-			active: true,
-			description: 'AI platform for privacy-focused, local audio file chat.',
-			technologies: ['AI/ML', 'Web'],
+				'Udeffy is an AI-powered learning platform that creates personalized learning journeys, combining intelligent content, interactive lessons, and real-time progress tracking to help learners achieve their goals faster and stay engaged.',
+			technologies: [
+				'Next.js (FE)',
+				'TailwindCSS',
+				'TypeScript',
+				'LLM',
+				'NestJS (BE)',
+				'Redis',
+				'BullMQ',
+				'BunnyCDN',
+				'Resend (Email & Newsletter)',
+				'Polar (Payments)',
+				'ShadcnUI',
+				'Umami (Analytics)',
+			],
 			links: [
 				{
 					type: 'Website',
-					href: 'https://zapyai.com',
+					href: 'https://udeffy.com',
 					icon: <Icons.globe className='size-3' />,
 				},
 			],
@@ -159,16 +169,44 @@ export const DATA = {
 			video: '',
 		},
 		{
-			title: 'Empire Education',
-			href: 'https://empire.edu.vn',
-			dates: '',
+			title: 'Zapy CLI',
+			href: '',
+			dates: 'March 2025 - Present',
 			active: true,
-			description: 'Education platform for online learning.',
-			technologies: ['Web'],
+			description:
+				'A production-grade TypeScript monorepo featuring an AI-powered CLI tool for Unity game development. Transform your game design documents into Unity C# scripts using AI.',
+			technologies: [
+				'AI/ML',
+				'Python',
+				'Typescript',
+				'CLI Tool',
+				'LLM',
+				'Unity Engine',
+			],
+			links: [],
+			image: '',
+			video: '',
+		},
+		{
+			title: 'Mozze',
+			href: 'https://mozze.vercel.app',
+			dates: 'March 2024 - June - 2024',
+			active: false,
+			description:
+				'Build your personal profile page to showcase your personal projects',
+			technologies: [
+				'Typescript',
+				'TailwindCSS',
+				'NextJS',
+				'Stripe',
+				'Server Actions',
+				'Prisma ORM',
+				'Next-Auth',
+			],
 			links: [
 				{
 					type: 'Website',
-					href: 'https://empire.edu.vn',
+					href: 'https://mozze.vercel.app',
 					icon: <Icons.globe className='size-3' />,
 				},
 			],
@@ -180,8 +218,17 @@ export const DATA = {
 			href: 'https://thuocsuckhoe.vn',
 			dates: '',
 			active: false,
-			description: 'Health news platform.',
-			technologies: ['Web'],
+			description:
+				'An online medical and legal news platform with a blog-style content engine.',
+			technologies: [
+				'MongoDB',
+				'ExpressJS',
+				'Reactjs',
+				'GraphQL',
+				'Google Analytics',
+				'CMS',
+				'Ads Management',
+			],
 			links: [
 				{
 					type: 'Website',
@@ -195,41 +242,39 @@ export const DATA = {
 	],
 	hackathons: [
 		{
-			title: 'Hack Western 5',
-			dates: 'November 23rd - 25th, 2018',
-			location: 'London, Ontario',
+			title: 'Zalo AI Challenge 2022',
+			dates: 'November 4th - December 12th, 2022',
+			location: 'Ho Chi Minh, Viet Nam',
 			description:
-				'Developed a mobile application which delivered bedtime stories to children using augmented reality.',
+				'Developed an AI model to identify fake images/videos - Liveness Detection problem',
 			image:
-				'https://pub-83c5db439b40468498f97946200806f7.r2.dev/hackline/hack-western.png',
-			mlh: 'https://s3.amazonaws.com/logged-assets/trust-badge/2019/mlh-trust-badge-2019-white.svg',
-			links: [],
-		},
-		{
-			title: 'Hack The North',
-			dates: 'September 14th - 16th, 2018',
-			location: 'Waterloo, Ontario',
-			description:
-				'Developed a mobile application which delivers university campus wide events in real time to all students.',
-			image:
-				'https://pub-83c5db439b40468498f97946200806f7.r2.dev/hackline/hack-the-north.png',
-			mlh: 'https://s3.amazonaws.com/logged-assets/trust-badge/2019/mlh-trust-badge-2019-white.svg',
-			links: [],
-		},
-		{
-			title: 'FirstNet Public Safety Hackathon',
-			dates: 'March 23rd - 24th, 2018',
-			location: 'San Francisco, California',
-			description:
-				'Developed a mobile application which communcicates a victims medical data from inside an ambulance to doctors at hospital.',
-			icon: 'public',
-			image:
-				'https://pub-83c5db439b40468498f97946200806f7.r2.dev/hackline/firstnet.png',
+				'https://cdn-1.webcatalog.io/catalog/zalo-ai/zalo-ai-icon-filled-256.png?v=1714777675773',
 			links: [
 				{
 					title: 'Source',
 					icon: <Icons.github className='h-4 w-4' />,
-					href: 'https://github.com/UWPortalSDK/crowmark',
+					href: 'https://github.com/tunglamforwork/zalo-ai',
+				},
+				{
+					title: 'Kaggle',
+					icon: <Icons.kaggle className='h-4 w-4' />,
+					href: 'https://www.kaggle.com/code/trantunglam/zalo-ai',
+				},
+			],
+		},
+		{
+			title: 'GDSC AI Challenge 2021',
+			dates: 'August 1st - September 1st, 2021',
+			location: 'HCMUT, Viet Nam',
+			description:
+				'Developed an AI model for image classification in general objects',
+			image:
+				'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSShQfHNHhdM5isJrgzTQheDRkvugcwO_6hQA&s',
+			links: [
+				{
+					title: 'Kaggle',
+					icon: <Icons.kaggle className='h-4 w-4' />,
+					href: 'https://www.kaggle.com/code/trantunglam/gdsc-ai',
 				},
 			],
 		},

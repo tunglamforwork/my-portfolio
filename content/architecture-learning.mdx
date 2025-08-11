@@ -1,0 +1,43 @@
+---
+title: 'Thinking in Architecture — Designing Scalable, Maintainable Systems'
+publishedAt: '2025-08-11'
+summary: 'A collection of architecture principles and patterns I use to build systems that last.'
+---
+
+# 🏛 Thinking in Architecture — Designing Scalable, Maintainable Systems
+
+Architecture isn’t just for large enterprises — even small apps benefit from good structure.
+Here’s my approach.
+
+---
+
+## 📐 Patterns I Rely On
+
+- **Clean Architecture** — separates business rules from infrastructure.
+- **Event-Driven Design** — use message queues (BullMQ, RabbitMQ) for scalability.
+- **CQRS + Event Sourcing** — when auditing and history tracking are essential.
+- **API Gateway** — unify and secure access to microservices.
+
+---
+
+## 🔑 Key Principles
+
+1. **Modular Monolith First** — split into services only when necessary.
+2. **APIs as Contracts** — design them for other teams, not just your own.
+3. **Observability Is Part of Architecture** — logs, metrics, and tracing are non-negotiable.
+
+---
+
+## ⚡ Lessons Learned
+
+- Premature microservices = unnecessary complexity.
+- Event-driven systems scale better for real-time use cases.
+- Documenting architecture is as important as designing it.
+
+---
+
+## 📚 What I’ll Share Next
+
+- Architecture diagrams of real-world projects
+- NestJS + Next.js deployment patterns
+- Designing fault-tolerant event pipelines

@@ -1,0 +1,119 @@
+---
+title: 'Projects & Lessons Learned — My Journey in Building Intelligent Applications'
+publishedAt: '2025-08-11'
+summary: 'A showcase of my key projects, the technologies behind them, and the lessons I’ve learned building intelligent, scalable applications.'
+---
+
+# 🚀 Projects & Lessons Learned
+
+Over the course of my career as a **full-stack software engineer**, I’ve worked on projects that combine **modern web development** with **AI**, **real-time systems**, and **data-driven decision-making**.
+Here’s a closer look at some of them — what I built, how I built it, and what I learned.
+
+---
+
+## 🧠 Udeffy – AI-Powered Personalized Learning Platform
+
+**Goal:** Help learners master skills faster through adaptive learning paths.
+
+**What I Built:**
+
+- Backend in **NestJS** with a clean modular architecture
+- AI lesson generation pipeline with **credit-based access control**
+- Background processing with **BullMQ** and job event streaming via **Server-Sent Events (SSE)**
+- Frontend in **Next.js** with rich UI using **Tailwind CSS** + **Shadcn UI**
+
+**Key Challenges & Solutions:**
+
+- **Challenge:** Generating diverse lesson formats (article, video, quiz, assignments) without blocking the main thread.
+  **Solution:** Offloaded generation to BullMQ jobs and used event streaming for live updates.
+- **Challenge:** Personalizing learning without overwhelming users.
+  **Solution:** Used survey-based pre-tests to tailor learning content dynamically.
+
+**Outcome:** A scalable platform that can handle multiple concurrent learners with individualized AI-driven content.
+
+---
+
+## 🏡 LinkAI – AI for Smarter Real Estate Decisions
+
+**Goal:** Provide actionable insights for property buyers, investors, and agents.
+
+**What I Built:**
+
+- Property valuation and trend analysis engine
+- Integration with real-time market data APIs
+- Custom **Copilot-style buyer agent** powered by prompt engineering
+- Output guidance per focus key (e.g., price, schools, crime) for relevant sections
+
+**Key Challenges & Solutions:**
+
+- **Challenge:** Providing accurate insights from volatile market data.
+  **Solution:** Combined API data with AI summarization and strict business logic rules to ensure reliability.
+- **Challenge:** Keeping AI answers on-topic.
+  **Solution:** Designed structured prompts with guardrails to avoid hallucinations.
+
+**Outcome:** An intelligent assistant that produces market insights users can trust.
+
+---
+
+## 📍 AI-Powered Map Discovery Tool
+
+**Goal:** Help users find places that match specific personal preferences.
+
+**What I Built:**
+
+- Map-based search with conversational AI interface
+- Criteria filtering (e.g., “restaurants with a sunset view and vegan options”)
+- Favorites system for saving places
+- Next.js frontend with real-time map rendering
+
+**Key Challenges & Solutions:**
+
+- **Challenge:** Translating vague user requests into actionable map queries.
+  **Solution:** Used AI to parse natural language into structured location search criteria.
+
+**Outcome:** A conversational location search that feels like talking to a local expert.
+
+---
+
+## 🔌 AI-Assisted Wiring Diagram Tool
+
+**Goal:** Speed up wiring diagram creation for engineers and designers.
+
+**What I Built:**
+
+- AI layout optimization for spacing and alignment of components
+- Assisted drag-and-drop UI for quick design
+- Export options for various industry-standard formats
+
+**Key Challenges & Solutions:**
+
+- **Challenge:** Maintaining precision in AI-generated layouts.
+  **Solution:** Implemented constraint-based algorithms that respect design rules.
+
+**Outcome:** Reduced manual layout time significantly for technical teams.
+
+---
+
+## 📚 Lessons Learned Across Projects
+
+1. **AI is only as good as the workflow around it** — guardrails and validation are critical.
+2. **Real-time features need strong architecture** — event-driven systems scale better than polling.
+3. **User experience is king** — even the smartest AI fails if the UI is clunky.
+4. **Scalable patterns matter** — modular NestJS architecture + Next.js SSR is a winning combo.
+
+---
+
+## 💡 What’s Next
+
+I’ll continue sharing deep dives into:
+
+- AI integration in full-stack apps
+- NestJS backend patterns
+- Real-time event streaming
+- Modern frontend performance tuning
+
+If you want to follow along, keep an eye on my blog or connect with me:
+
+- **GitHub:** [https://www.github.com/tunglamforwork]
+- **LinkedIn:** [https://www.linkedin.com/in/ttlamdev/]
+- **Portfolio:** [https://www.ttlam.dev]
