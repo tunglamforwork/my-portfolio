@@ -39,7 +39,7 @@ const PROJECTS = [
 
 export function FeaturedWork() {
 	return (
-		<section id='work' className='py-24 px-6 bg-[#F5F3EE]'>
+		<section id='work' className='py-24 px-6 bg-[var(--c-section-alt)]'>
 			<div className='max-w-7xl mx-auto'>
 				<FadeIn>
 					<Label>Featured Work</Label>
@@ -79,7 +79,7 @@ export function FeaturedWork() {
 										{proj.stack.map((s) => (
 											<span
 												key={s}
-												className='text-[12px] font-[700] px-3 py-1 border-[2px] border-[#0B0B0B] rounded-full'
+												className='text-[12px] font-[700] px-3 py-1 border-[2px] border-[var(--neo-border)] rounded-full'
 												style={{
 													backgroundColor: proj.textLight
 														? 'rgba(255,255,255,0.18)'
@@ -93,8 +93,7 @@ export function FeaturedWork() {
 									</div>
 									{'result' in proj && proj.result && (
 										<div
-											className='inline-block px-4 py-2 rounded-full text-sm font-[700]'
-											style={{ backgroundColor: C.text, color: 'white' }}
+											className='inline-block px-4 py-2 rounded-full text-sm font-[700] bg-foreground text-background'
 										>
 											{proj.result}
 										</div>

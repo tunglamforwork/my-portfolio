@@ -41,7 +41,7 @@ export function Experience() {
 				<div className='space-y-4'>
 					{JOBS.map((job, i) => (
 						<FadeIn key={job.company} delay={i * 0.09}>
-							<div className={`${NEO_CARD_SM} p-6 bg-white flex gap-5 items-stretch`}>
+							<div className={`${NEO_CARD_SM} p-6 bg-background flex gap-5 items-stretch`}>
 								<div
 									className='w-1.5 flex-shrink-0 rounded-full self-stretch'
 									style={{ backgroundColor: job.color }}
@@ -55,7 +55,7 @@ export function Experience() {
 											</span>
 										</div>
 										<span
-											className='text-[12px] font-[700] px-3 py-1.5 border-[2px] border-[#0B0B0B] rounded-full whitespace-nowrap self-start'
+											className='text-[12px] font-[700] px-3 py-1.5 border-[2px] border-[var(--neo-border)] rounded-full whitespace-nowrap self-start'
 											style={{ backgroundColor: job.color + '22' }}
 										>
 											{job.period}

@@ -51,7 +51,7 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang='en' suppressHydrationWarning>
-			<body className={cn('min-h-screen bg-white antialiased', fontOnest.variable)}>
+			<body className={cn('min-h-screen bg-background antialiased', fontOnest.variable)}>
 				<ThemeProvider attribute='class' defaultTheme='light' enableSystem={false} disableTransitionOnChange>
 					<TooltipProvider delayDuration={0}>{children}</TooltipProvider>
 				</ThemeProvider>

@@ -23,7 +23,7 @@ export function Hero() {
 							transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
 						>
 							<span
-								className='inline-block text-[11px] font-[700] tracking-[0.18em] uppercase px-4 py-2 border-[3px] border-[#0B0B0B] rounded-full'
+								className='inline-block text-[11px] font-[700] tracking-[0.18em] uppercase px-4 py-2 border-[3px] border-[var(--neo-border)] rounded-full'
 								style={{ backgroundColor: C.sky }}
 							>
 								✦ Software Engineer · Applied AI
@@ -75,14 +75,14 @@ export function Hero() {
 						>
 							<a
 								href='#work'
-								className='px-7 py-3.5 font-[700] border-[3px] border-[#0B0B0B] rounded-full shadow-[4px_4px_0_#0B0B0B] transition-all duration-[250ms] hover:-translate-x-1 hover:-translate-y-1'
+								className='px-7 py-3.5 font-[700] border-[3px] border-[var(--neo-border)] rounded-full shadow-[4px_4px_0_var(--neo-border)] transition-all duration-[250ms] hover:-translate-x-1 hover:-translate-y-1'
 								style={{ backgroundColor: C.coral }}
 							>
 								See My Work
 							</a>
 							<a
 								href='#contact'
-								className='px-7 py-3.5 font-[700] border-[3px] border-[#0B0B0B] rounded-full shadow-[4px_4px_0_#0B0B0B] transition-all duration-[250ms] hover:-translate-x-1 hover:-translate-y-1 bg-white'
+								className='px-7 py-3.5 font-[700] border-[3px] border-[var(--neo-border)] rounded-full shadow-[4px_4px_0_var(--neo-border)] transition-all duration-[250ms] hover:-translate-x-1 hover:-translate-y-1 bg-background'
 							>
 								Contact Me
 							</a>
@@ -94,7 +94,7 @@ export function Hero() {
 						{STAT_CARDS.map((card, i) => (
 							<motion.div
 								key={card.label}
-								className='p-6 border-[3px] border-[#0B0B0B] rounded-[24px] shadow-[6px_6px_0_#0B0B0B] transition-all duration-[250ms] hover:-translate-x-1 hover:-translate-y-1 cursor-default'
+								className='p-6 border-[3px] border-[var(--neo-border)] rounded-[24px] shadow-[6px_6px_0_var(--neo-border)] transition-all duration-[250ms] hover:-translate-x-1 hover:-translate-y-1 cursor-default'
 								style={{ backgroundColor: card.bg }}
 								initial={{ opacity: 0, scale: 0.88, y: 16 }}
 								animate={{ opacity: 1, scale: 1, y: 0 }}

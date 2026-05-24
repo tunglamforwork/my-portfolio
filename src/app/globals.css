@@ -21,6 +21,11 @@ html {
       --background: 0 0% 100%;
       --foreground: 210 11.1% 3.53%;
 
+      --neo-border: #0B0B0B;
+      --c-text: #0B0B0B;
+      --c-muted: #5B5B5B;
+      --c-section-alt: #F5F3EE;
+
       --card: 0 0% 100%;
       --card-foreground: 210 11.1% 3.53%;
 
@@ -52,6 +57,11 @@ html {
     .dark {
       --background: 210 11.1% 3.53%;
       --foreground: 0 0% 98%;
+
+      --neo-border: #DCDCDC;
+      --c-text: #F0F0F0;
+      --c-muted: #9A9A9A;
+      --c-section-alt: #1C1C1C;
 
       --card: 210 11.1% 3.53%;
       --card-foreground: 0 0% 98%;
@@ -121,6 +131,12 @@ html {
       color: var(--shiki-dark);
       background-color: var(--shiki-dark-bg);
     }
+  }
+
+  .dark code[data-theme*=" "],
+  .dark code[data-theme*=" "] span {
+    color: var(--shiki-dark);
+    background-color: var(--shiki-dark-bg);
   }
   
   code[data-line-numbers] {

@@ -27,8 +27,7 @@ export function Contact() {
 								href='https://github.com/tunglamforwork'
 								target='_blank'
 								rel='noopener noreferrer'
-								className='flex items-center gap-2 px-7 py-3.5 font-[700] border-[3px] border-[#0B0B0B] rounded-full shadow-[4px_4px_0_#0B0B0B] transition-all duration-[250ms] hover:-translate-x-1 hover:-translate-y-1'
-								style={{ backgroundColor: C.text, color: 'white' }}
+								className='flex items-center gap-2 px-7 py-3.5 font-[700] border-[3px] border-[var(--neo-border)] rounded-full shadow-[4px_4px_0_var(--neo-border)] transition-all duration-[250ms] hover:-translate-x-1 hover:-translate-y-1 bg-foreground text-background'
 							>
 								<GitHubIcon />
 								GitHub
@@ -37,7 +36,7 @@ export function Contact() {
 								href='https://www.linkedin.com/in/ttlamdev'
 								target='_blank'
 								rel='noopener noreferrer'
-								className='flex items-center gap-2 px-7 py-3.5 font-[700] border-[3px] border-[#0B0B0B] rounded-full shadow-[4px_4px_0_#0B0B0B] transition-all duration-[250ms] hover:-translate-x-1 hover:-translate-y-1'
+								className='flex items-center gap-2 px-7 py-3.5 font-[700] border-[3px] border-[var(--neo-border)] rounded-full shadow-[4px_4px_0_var(--neo-border)] transition-all duration-[250ms] hover:-translate-x-1 hover:-translate-y-1'
 								style={{ backgroundColor: C.blue, color: 'white' }}
 							>
 								<LinkedInIcon />
@@ -45,7 +44,7 @@ export function Contact() {
 							</a>
 							<a
 								href='mailto:ttlam.dev@gmail.com'
-								className='flex items-center gap-2 px-7 py-3.5 font-[700] border-[3px] border-[#0B0B0B] rounded-full shadow-[4px_4px_0_#0B0B0B] transition-all duration-[250ms] hover:-translate-x-1 hover:-translate-y-1'
+								className='flex items-center gap-2 px-7 py-3.5 font-[700] border-[3px] border-[var(--neo-border)] rounded-full shadow-[4px_4px_0_var(--neo-border)] transition-all duration-[250ms] hover:-translate-x-1 hover:-translate-y-1'
 								style={{ backgroundColor: C.coral }}
 							>
 								<EmailIcon />
