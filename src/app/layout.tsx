@@ -1,4 +1,3 @@
-import { ThemeProvider } from '@/components/theme-provider';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { DATA } from '@/data/resume';
 import { cn } from '@/lib/utils';
@@ -50,11 +49,9 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<html lang='en' suppressHydrationWarning>
+		<html lang='en'>
 			<body className={cn('min-h-screen bg-background antialiased', fontOnest.variable)}>
-				<ThemeProvider attribute='class' defaultTheme='light' enableSystem={false} disableTransitionOnChange>
-					<TooltipProvider delayDuration={0}>{children}</TooltipProvider>
-				</ThemeProvider>
+				<TooltipProvider delayDuration={0}>{children}</TooltipProvider>
 			</body>
 		</html>
 	);

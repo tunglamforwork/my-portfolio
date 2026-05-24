@@ -1,6 +1,5 @@
 'use client';
 
-import { ModeToggle } from '@/components/mode-toggle';
 import { C } from './constants';
 
 const NAV_LINKS = ['Work', 'Experience', 'About', 'Experiments', 'Blog', 'Contact'];
@@ -24,7 +23,6 @@ export function Nav() {
 				</div>
 
 				<div className='flex items-center gap-3'>
-					<ModeToggle />
 					<a
 						href='#contact'
 						className='px-5 py-2.5 text-sm font-[700] border-[3px] border-[var(--neo-border)] rounded-full shadow-[4px_4px_0_var(--neo-border)] transition-all duration-[250ms] hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0 active:translate-y-0'
