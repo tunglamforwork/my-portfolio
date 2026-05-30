@@ -14,7 +14,9 @@ export function Nav() {
 					{NAV_LINKS.map((item) => (
 						<a
 							key={item}
-							href={item === 'Blog' ? '/blog' : `#${item.toLowerCase()}`}
+							href={item === 'Blog' ? 'https://blog.ttlam.dev' : `#${item.toLowerCase()}`}
+						target={item === 'Blog' ? '_blank' : undefined}
+						rel={item === 'Blog' ? 'noopener noreferrer' : undefined}
 							className='text-sm font-[500] transition-opacity duration-200 hover:opacity-50'
 						>
 							{item}

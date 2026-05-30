@@ -39,7 +39,7 @@ export default async function BlogPage() {
 			) : (
 				<div className='space-y-5'>
 					{sorted.map((post, i) => (
-						<Link key={post.slug} href={`/blog/${post.slug}`} className='block group'>
+						<Link key={post.slug} href={`https://blog.ttlam.dev/${post.slug}`} className='block group'>
 							<div
 								className='p-6 border-[3px] border-[#0B0B0B] rounded-[24px] shadow-[6px_6px_0_#0B0B0B] bg-white transition-all duration-[250ms] ease-in-out group-hover:-translate-x-1 group-hover:-translate-y-1'
 							>
