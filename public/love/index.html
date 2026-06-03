@@ -116,11 +116,42 @@
       white-space: nowrap; transition: color 1.4s ease;
     }
     .special-hint.visible { color: rgba(255, 210, 60, 0.62); }
+
+    .level-flash {
+      position: fixed; top: 44%; left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: Georgia, serif; font-size: 0.88rem;
+      letter-spacing: 0.34em; text-transform: uppercase;
+      pointer-events: none; white-space: nowrap; z-index: 20;
+      opacity: 0;
+    }
+    .level-flash.pop { animation: levelPop 2.4s ease-out forwards; }
+    @keyframes levelPop {
+      0%   { opacity:0; transform:translate(-50%,-50%) scale(0.75); color:rgba(255,215,0,0.95); }
+      18%  { opacity:1; transform:translate(-50%,-50%) scale(1.08); }
+      55%  { opacity:1; transform:translate(-50%,-50%) scale(1);    }
+      100% { opacity:0; transform:translate(-50%,-50%) scale(1);    color:rgba(255,215,0,0.95); }
+    }
+
+    .combo-msg {
+      position: fixed; top: 100px; right: 22px;
+      font-family: Georgia, serif; font-size: 0.70rem;
+      letter-spacing: 0.28em; text-transform: uppercase;
+      pointer-events: none; text-align: right; opacity: 0;
+    }
+    .combo-msg.pop { animation: comboMsgPop 1.8s ease-out forwards; }
+    @keyframes comboMsgPop {
+      0%   { opacity:0; color:rgba(255,200,120,0.95); transform:translateY(5px); }
+      20%  { opacity:1; transform:translateY(0); }
+      65%  { opacity:1; }
+      100% { opacity:0; }
+    }
+    .combo-msg.star-pop { animation: comboMsgPop 2.2s ease-out forwards; color: rgba(200,230,255,0.95); }
   </style>
 </head>
 <body>
   <canvas id="c"></canvas>
-  <p class="hint">Drag · Scroll to zoom · Click a heart · Double-click to change theme · ✦ Find the golden heart</p>
+  <p class="hint">Drag · Scroll to zoom · Click a heart · Pop hearts to unlock themes · ✦ Find the golden heart · ★ Catch a shooting star</p>
   <div class="love-counter" id="loveCounter">
     <span id="loveCount">0</span> hearts loved
     <div class="rank-label" id="rankLabel"></div>
@@ -129,7 +160,9 @@
     <div class="combo-number" id="comboNumber">×2</div>
     <div class="combo-label">Combo</div>
   </div>
-  <p class="special-hint" id="specialHint">✦ A golden heart awaits</p>
+  <p class="special-hint" id="specialHint">✦ A golden heart awaits · click it!</p>
+  <div class="level-flash" id="levelFlash"></div>
+  <div class="combo-msg"   id="comboMsg"></div>
   <div class="quote-overlay" id="quoteOverlay">
     <div class="quote-inner">
       <p class="quote-text" id="quoteText"></p>
@@ -246,24 +279,14 @@
     }
 
     const THEMES = [
-      { // Rose gold
-        main: [0xC84060, 0xE63946],
-        orbs: [[0xE63946,0xE63946],[0xB8880E,0xD4AF37],[0xF8D7DA,0xF8D7DA],[0xD8C4F1,0xD8C4F1],[0xa02040,0xff4060]],
-      },
-      { // Ice & Sapphire
-        main: [0x3058C0, 0x4060E8],
-        orbs: [[0x4060E8,0x6080ff],[0x20A8D0,0x20c8ff],[0xC0D8F8,0xC0D8F8],[0x9080F0,0xb0a0ff],[0x2040A0,0x5070ff]],
-      },
-      { // Champagne & Coral
-        main: [0xC0880A, 0xD4A020],
-        orbs: [[0xD4A020,0xD4AF37],[0xE07050,0xff8060],[0xFFF0C8,0xFFF0C8],[0xE0B880,0xE0C898],[0x986010,0xC09030]],
-      },
-      { // Amethyst
-        main: [0x7830C0, 0xA050E8],
-        orbs: [[0xD8C4F1,0xe0d0ff],[0xC060E0,0xe080ff],[0xffc8e8,0xffc8e8],[0x6040C0,0xa060ff],[0x501080,0x9040E0]],
-      },
+      { name: 'Rose Gold',      main: [0xC84060, 0xE63946], orbs: [[0xE63946,0xE63946],[0xB8880E,0xD4AF37],[0xF8D7DA,0xF8D7DA],[0xD8C4F1,0xD8C4F1],[0xa02040,0xff4060]] },
+      { name: 'Ice Sapphire',   main: [0x3058C0, 0x4060E8], orbs: [[0x4060E8,0x6080ff],[0x20A8D0,0x20c8ff],[0xC0D8F8,0xC0D8F8],[0x9080F0,0xb0a0ff],[0x2040A0,0x5070ff]] },
+      { name: 'Champagne',      main: [0xC0880A, 0xD4A020], orbs: [[0xD4A020,0xD4AF37],[0xE07050,0xff8060],[0xFFF0C8,0xFFF0C8],[0xE0B880,0xE0C898],[0x986010,0xC09030]] },
+      { name: 'Amethyst',       main: [0x7830C0, 0xA050E8], orbs: [[0xD8C4F1,0xe0d0ff],[0xC060E0,0xe080ff],[0xffc8e8,0xffc8e8],[0x6040C0,0xa060ff],[0x501080,0x9040E0]] },
     ];
     let themeIndex = 0;
+
+    const LEVEL_THRESHOLDS = [5, 15, 30, 55, 90];
 
     const MAT_MAIN = phys(0xC84060, 0xE63946, 0.42, 0.82, 0.10);
 
@@ -413,28 +436,48 @@
       scene.add(m);
     }
 
-    // ── SHOOTING HEART POOL ─────────────────────────────────
-    const shootPool = [];
-    let nextShootAt = 4 + Math.random() * 5;
+    // ── SHOOTING STAR POOL ──────────────────────────────────
+    const starPool  = [];
+    let nextStarAt  = 6 + Math.random() * 10;
+    const GEO_STAR  = new THREE.OctahedronGeometry(0.22, 0);
 
-    function spawnShootingHeart() {
+    const STAR_QUOTES = [
+      { text: "You caught a star. That says everything.", author: "" },
+      { text: "The universe is conspiring in your favour.", author: "" },
+      { text: "A shooting star, a secret wish — yours has been heard.", author: "" },
+      { text: "Some things are worth reaching for.", author: "" },
+      { text: "You were born to shine.", author: "" },
+    ];
+
+    function spawnStarTrail(pos) {
+      const m = new THREE.Mesh(
+        new THREE.SphereGeometry(0.04 + Math.random() * 0.04, 4, 4),
+        new THREE.MeshBasicMaterial({ color: 0xFFFFCC, transparent: true, opacity: 0.9 })
+      );
+      m.position.copy(pos).add(new THREE.Vector3(
+        (Math.random() - 0.5) * 0.15,
+        (Math.random() - 0.5) * 0.15,
+        (Math.random() - 0.5) * 0.2
+      ));
+      m.userData = { life: 1.0, decay: 0.06 + Math.random() * 0.04, vy: 0.002, isSpark: true };
+      trailPool.push(m);
+      scene.add(m);
+    }
+
+    function spawnShootingStar() {
       const side = Math.random() < 0.5 ? 1 : -1;
-      const mat  = MAT_PALETTE[Math.floor(Math.random() * MAT_PALETTE.length)].clone();
-      mat.transparent = true;
-      mat.emissiveIntensity = 3.2;
-      const sc   = 0.32 + Math.random() * 0.40;
-      const m    = new THREE.Mesh(GEO_MED, mat);
-      m.scale.setScalar(sc);
-      m.position.set(side * 15, (Math.random() - 0.5) * 7, (Math.random() - 0.5) * 3);
-      const spd  = 0.14 + Math.random() * 0.09;
+      const mat  = new THREE.MeshBasicMaterial({ color: 0xFFFFEE, transparent: true });
+      const m    = new THREE.Mesh(GEO_STAR, mat);
+      m.rotation.set(Math.random()*Math.PI, Math.random()*Math.PI, Math.random()*Math.PI);
+      m.position.set(side * 16, (Math.random() - 0.5) * 5, (Math.random() - 0.5) * 2);
+      const spd  = 0.20 + Math.random() * 0.14;
       m.userData = {
         vx: -side * spd,
-        vy: (Math.random() - 0.5) * 0.018,
-        rotY: (Math.random() - 0.5) * 0.12,
-        life: 1.0, decay: 0.006,
-        baseSc: sc, trailT: 0,
+        vy: (Math.random() - 0.5) * 0.014,
+        rotZ: (Math.random() - 0.5) * 0.08,
+        life: 1.0, decay: 0.004, trailT: 0, isStar: true,
       };
-      shootPool.push(m);
+      starPool.push(m);
       scene.add(m);
     }
 
@@ -550,6 +593,8 @@
     const comboDisplayEl = document.getElementById('comboDisplay');
     const comboNumberEl  = document.getElementById('comboNumber');
     const specialHintEl  = document.getElementById('specialHint');
+    const levelFlashEl   = document.getElementById('levelFlash');
+    const comboMsgEl     = document.getElementById('comboMsg');
     let quoteTimer    = null;
     let lastQuoteIdx  = -1;
     let typeIv        = null;
@@ -559,6 +604,23 @@
     let combo = 0;
     let comboTimeout = null;
     const COMBO_MS = 1600;
+    const COMBO_MILESTONES = [
+      { at: 3,  msg: 'Sweet'          },
+      { at: 5,  msg: 'On Fire'        },
+      { at: 7,  msg: 'Unstoppable'    },
+      { at: 10, msg: 'Heart Champion' },
+      { at: 15, msg: 'Love Legend'    },
+    ];
+    let comboMsgTimeout = null;
+
+    function showComboMsg(text, starStyle = false) {
+      if (comboMsgTimeout) clearTimeout(comboMsgTimeout);
+      comboMsgEl.textContent = text;
+      comboMsgEl.className = 'combo-msg';
+      void comboMsgEl.offsetWidth;
+      comboMsgEl.classList.add(starStyle ? 'star-pop' : 'pop');
+      comboMsgTimeout = setTimeout(() => { comboMsgEl.className = 'combo-msg'; }, 2200);
+    }
 
     function registerPop() {
       if (comboTimeout) clearTimeout(comboTimeout);
@@ -573,6 +635,8 @@
           comboNumberEl.style.transition = 'transform 0.28s ease-out';
           comboNumberEl.style.transform  = 'scale(1)';
         });
+        const ms = COMBO_MILESTONES.slice().reverse().find(m => combo >= m.at);
+        if (ms && combo === ms.at) showComboMsg(ms.msg);
         if (combo >= 7)      { bloomTarget = 5.0; setTimeout(() => { bloomTarget = 1.3; }, 750); }
         else if (combo >= 4) { bloomTarget = 3.8; setTimeout(() => { bloomTarget = 1.3; }, 550); }
         else                 { bloomTarget = 2.8; setTimeout(() => { bloomTarget = 1.3; }, 400); }
@@ -593,6 +657,16 @@
       { min: 100, label: 'Eternal Love' },
     ];
     let lastRankLabel = '';
+    let levelFlashTimeout = null;
+
+    function showLevelFlash(text) {
+      if (levelFlashTimeout) clearTimeout(levelFlashTimeout);
+      levelFlashEl.textContent = text;
+      levelFlashEl.className = 'level-flash';
+      void levelFlashEl.offsetWidth;
+      levelFlashEl.classList.add('pop');
+      levelFlashTimeout = setTimeout(() => { levelFlashEl.className = 'level-flash'; }, 2500);
+    }
 
     function updateRankDisplay() {
       let label = '';
@@ -608,12 +682,29 @@
       }
     }
 
+    // ── LEVEL-BASED THEME UNLOCK ─────────────────────────────────
+    let nextLevelIdx = 0;
+
+    function checkLevelUp() {
+      if (nextLevelIdx >= LEVEL_THRESHOLDS.length) return;
+      if (heartsLoved >= LEVEL_THRESHOLDS[nextLevelIdx]) {
+        nextLevelIdx++;
+        cycleTheme();
+        const name = THEMES[themeIndex].name;
+        showLevelFlash(`✦ ${name} unlocked`);
+      }
+    }
+
     // ── SPECIAL GOLDEN HEART ────────────────────────────────────
-    let specialMesh     = null;
-    let specialGlow     = null;
+    let specialMesh      = null;
+    let specialGlow      = null;
+    let specialSparkles  = [];
     let specialSpawnedAt = -1;
     const SPECIAL_DURATION = 30;
-    let nextSpecialAt   = 18 + Math.random() * 18;
+    let nextSpecialAt    = 18 + Math.random() * 18;
+    const GOLD_COL = new THREE.Color(0xFFD700);
+    const GOLD_EMI = new THREE.Color(0xFFAA00);
+    const GEO_SPARK = new THREE.OctahedronGeometry(0.055, 0);
 
     function markSpecial() {
       if (specialMesh || orbitHearts.length === 0) return;
@@ -621,19 +712,50 @@
       const mesh = orbitHearts[idx];
       if (mesh.userData._popping) return;
       specialMesh = mesh;
-      mesh.userData.isSpecial = true;
+      mesh.userData.isSpecial   = true;
+      mesh.userData._origMat    = mesh.material;
+      const sMat = mesh.material.clone();
+      mesh.userData._specialMat = sMat;
+      mesh.material = sMat;
 
+      // Outer glow sphere
       specialGlow = new THREE.Mesh(
-        new THREE.SphereGeometry(0.7, 16, 16),
-        new THREE.MeshBasicMaterial({ color: 0xFFCC00, transparent: true, opacity: 0.15, side: THREE.BackSide })
+        new THREE.SphereGeometry(1.1, 16, 16),
+        new THREE.MeshBasicMaterial({ color: 0xFFCC00, transparent: true, opacity: 0.12, side: THREE.BackSide })
       );
       scene.add(specialGlow);
+
+      // 7 orbiting sparkle octahedra
+      for (let i = 0; i < 7; i++) {
+        const sm = new THREE.Mesh(GEO_SPARK,
+          new THREE.MeshBasicMaterial({ color: 0xFFEE44, transparent: true, opacity: 0.85 })
+        );
+        sm.userData.sparkIdx = i;
+        scene.add(sm);
+        specialSparkles.push(sm);
+      }
+
       specialSpawnedAt = clock.getElapsedTime();
       specialHintEl.classList.add('visible');
     }
 
-    function unmarkSpecial() {
+    function unmarkSpecial(forPop = false) {
       if (!specialMesh) return;
+      if (!forPop) {
+        // Expiry — restore original material
+        specialMesh.material = specialMesh.userData._origMat;
+        if (specialMesh.userData._specialMat) {
+          specialMesh.userData._specialMat.dispose();
+          delete specialMesh.userData._specialMat;
+        }
+        delete specialMesh.userData._origMat;
+      } else {
+        // Pop — keep golden mat on mesh so pop animation is golden; dispose it after pop ends
+        const matRef = specialMesh.userData._specialMat;
+        if (matRef) setTimeout(() => matRef.dispose(), 2200);
+        delete specialMesh.userData._specialMat;
+        delete specialMesh.userData._origMat;
+      }
       specialMesh.userData.isSpecial = false;
       specialMesh = null;
       if (specialGlow) {
@@ -642,6 +764,11 @@
         specialGlow.geometry.dispose();
         specialGlow = null;
       }
+      for (const sm of specialSparkles) {
+        scene.remove(sm);
+        sm.material.dispose();
+      }
+      specialSparkles = [];
       specialHintEl.classList.remove('visible');
     }
 
@@ -678,18 +805,19 @@
       }, speed);
     }
 
-    function showQuote() {
+    function showQuote(pool = null) {
+      const src = pool || QUOTES;
       let idx;
-      do { idx = Math.floor(Math.random() * QUOTES.length); } while (idx === lastQuoteIdx);
+      do { idx = Math.floor(Math.random() * src.length); } while (idx === lastQuoteIdx && src.length > 1);
       lastQuoteIdx = idx;
-      const q = QUOTES[idx];
+      const q = src[idx];
       quoteAuthEl.textContent = '';
       quoteOverlay.classList.add('visible');
       if (quoteTimer) clearTimeout(quoteTimer);
       typewrite(quoteTextEl, `”${q.text}”`, 26, () => {
         if (q.author) setTimeout(() => { quoteAuthEl.textContent = `— ${q.author}`; }, 180);
       });
-      quoteTimer = setTimeout(() => quoteOverlay.classList.remove('visible'), 4600);
+      quoteTimer = setTimeout(() => quoteOverlay.classList.remove('visible'), 4800);
     }
 
     function incrementLoveCounter(by = 1) {
@@ -698,6 +826,7 @@
       loveCounterEl.classList.add('visible', 'pulse');
       setTimeout(() => loveCounterEl.classList.remove('pulse'), 500);
       updateRankDisplay();
+      checkLevelUp();
     }
 
     // ── POP ANIMATION POOL ──────────────────────────────────
@@ -855,11 +984,8 @@
       }
     }, { passive: true });
 
-    let lastClick = 0;
     canvas.addEventListener('click', e => {
       if (dragMoved) return; // suppress click after drag
-
-      const now = Date.now();
 
       // Raycast against all non-popping orbit + float hearts
       _pickMouse.set(
@@ -868,33 +994,44 @@
       );
       _pickRay.setFromCamera(_pickMouse, camera);
 
-      const targets = [...orbitHearts, ...floatHearts];
+      const targets = [...orbitHearts, ...floatHearts, ...starPool];
       const hits = _pickRay.intersectObjects(targets, false);
 
       if (hits.length > 0) {
-        const hitMesh  = hits[0].object;
-        const isSpecial = hitMesh.userData.isSpecial;
-        const chainPos  = hitMesh.position.clone();
-        if (isSpecial) {
-          unmarkSpecial();
-          popSpecialChain(chainPos);
-        }
-        popHeart(hitMesh);
-        showQuote();
-        incrementLoveCounter();
-        const c = registerPop();
-        if (!isSpecial) {
-          bloomTarget = c >= 5 ? 4.2 : c >= 3 ? 3.4 : 2.8;
-          setTimeout(() => { bloomTarget = 1.3; }, 400);
+        const hitMesh = hits[0].object;
+
+        if (hitMesh.userData.isStar) {
+          // ── STAR CLICK ──────────────────────────────────────
+          const si = starPool.indexOf(hitMesh);
+          if (si !== -1) starPool.splice(si, 1);
+          scene.remove(hitMesh);
+          hitMesh.material.dispose();
+          spawnBurst(hitMesh.position.clone());
+          shockTime = clock.getElapsedTime();
+          showQuote(STAR_QUOTES);
+          bloomTarget = 5.2;
+          setTimeout(() => { bloomTarget = 1.3; }, 800);
+          showComboMsg('★ Wish Granted', true);
+        } else {
+          // ── HEART CLICK ─────────────────────────────────────
+          const isSpecial = hitMesh.userData.isSpecial;
+          const chainPos  = hitMesh.position.clone();
+          if (isSpecial) {
+            unmarkSpecial(true);
+            popSpecialChain(chainPos);
+          }
+          popHeart(hitMesh);
+          showQuote();
+          incrementLoveCounter();
+          const c = registerPop();
+          if (!isSpecial) {
+            bloomTarget = c >= 5 ? 4.2 : c >= 3 ? 3.4 : 2.8;
+            setTimeout(() => { bloomTarget = 1.3; }, 400);
+          }
         }
       } else {
-        if (now - lastClick < 320) {
-          cycleTheme();
-        } else {
-          spawnBurst();
-          shockTime = clock.getElapsedTime();
-        }
-        lastClick = now;
+        spawnBurst();
+        shockTime = clock.getElapsedTime();
       }
     });
 
@@ -964,22 +1101,38 @@
         }
       }
 
-      // ── SPECIAL HEART PULSE ───────────────────────────────
+      // ── SPECIAL HEART PULSE & SPARKLES ───────────────────
       if (specialMesh) {
         if (specialMesh.userData._popping) {
-          unmarkSpecial();
+          unmarkSpecial(false);
         } else {
           const age = t - specialSpawnedAt;
           if (age > SPECIAL_DURATION) {
-            unmarkSpecial();
+            unmarkSpecial(false);
             nextSpecialAt = t + 20 + Math.random() * 22;
           } else {
-            specialMesh.material.emissiveIntensity = 1.6 + Math.sin(t * 5.2) * 0.75;
-            specialMesh.scale.setScalar(specialMesh.userData.sz * (1.12 + Math.sin(t * 5.2) * 0.06));
+            const pulse = Math.sin(t * 5.2);
+            specialMesh.material.color.lerp(GOLD_COL, 0.06);
+            specialMesh.material.emissive.lerp(GOLD_EMI, 0.06);
+            specialMesh.material.emissiveIntensity = 1.8 + pulse * 0.8;
+            specialMesh.scale.setScalar(specialMesh.userData.sz * (1.14 + pulse * 0.07));
             if (specialGlow) {
               specialGlow.position.copy(specialMesh.position);
-              specialGlow.material.opacity = 0.10 + Math.sin(t * 5.2) * 0.06;
-              specialGlow.scale.setScalar(specialMesh.scale.x * 1.55);
+              specialGlow.material.opacity = 0.10 + pulse * 0.06;
+              specialGlow.scale.setScalar(specialMesh.userData.sz * 1.6);
+            }
+            // Orbit sparkles
+            const n = specialSparkles.length;
+            for (let i = 0; i < n; i++) {
+              const ang = (i / n) * Math.PI * 2 + t * 2.8;
+              const r2  = specialMesh.userData.sz * 0.95;
+              specialSparkles[i].position.set(
+                specialMesh.position.x + Math.cos(ang) * r2,
+                specialMesh.position.y + Math.sin(ang * 0.6 + t) * r2 * 0.55,
+                specialMesh.position.z + Math.sin(ang) * r2 * 0.5
+              );
+              specialSparkles[i].rotation.y += 0.15;
+              specialSparkles[i].material.opacity = 0.55 + Math.sin(t * 9 + i * 1.1) * 0.35;
             }
           }
         }
@@ -1059,32 +1212,37 @@
       for (let i = trailPool.length - 1; i >= 0; i--) {
         const h = trailPool[i]; const d = h.userData;
         d.life -= d.decay;
-        h.position.y += d.vy;
-        h.position.x += d.vx;
-        h.rotation.y += d.rotY;
-        h.material.opacity = Math.max(0, d.life * d.life);
-        h.material.emissiveIntensity = d.life * 2.2;
-        h.scale.setScalar(d.baseSc * (0.4 + d.life * 0.6));
+        if (d.isSpark) {
+          h.position.y += d.vy;
+          h.material.opacity = Math.max(0, d.life * d.life);
+        } else {
+          h.position.y += d.vy;
+          h.position.x += d.vx;
+          h.rotation.y += d.rotY;
+          h.material.opacity = Math.max(0, d.life * d.life);
+          h.material.emissiveIntensity = d.life * 2.2;
+          h.scale.setScalar(d.baseSc * (0.4 + d.life * 0.6));
+        }
         if (d.life <= 0) { scene.remove(h); h.material.dispose(); trailPool.splice(i, 1); }
       }
 
-      // ── SHOOTING HEARTS ───────────────────────────────────
-      if (t > nextShootAt) {
-        spawnShootingHeart();
-        nextShootAt = t + 4 + Math.random() * 8;
+      // ── SHOOTING STARS ────────────────────────────────────
+      if (t > nextStarAt) {
+        spawnShootingStar();
+        nextStarAt = t + 7 + Math.random() * 14;
       }
-      for (let i = shootPool.length - 1; i >= 0; i--) {
-        const h = shootPool[i]; const d = h.userData;
+      for (let i = starPool.length - 1; i >= 0; i--) {
+        const h = starPool[i]; const d = h.userData;
         h.position.x += d.vx;
         h.position.y += d.vy;
-        h.rotation.y += d.rotY;
+        h.rotation.z += d.rotZ;
+        h.rotation.y += 0.06;
         d.trailT++;
-        if (d.trailT % 3 === 0) spawnTrailHeart(h.position.clone());
+        if (d.trailT % 2 === 0) spawnStarTrail(h.position.clone());
         d.life -= d.decay;
-        h.material.opacity = Math.min(1, d.life * 4);
-        h.material.emissiveIntensity = d.life * 3.2;
-        if (d.life <= 0 || Math.abs(h.position.x) > 18) {
-          scene.remove(h); h.material.dispose(); shootPool.splice(i, 1);
+        h.material.opacity = Math.min(1, d.life * 5);
+        if (d.life <= 0 || Math.abs(h.position.x) > 19) {
+          scene.remove(h); h.material.dispose(); starPool.splice(i, 1);
         }
       }
 
