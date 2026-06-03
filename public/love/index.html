@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>♥</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; overflow: hidden; background: #080006; }
+    canvas { display: block; cursor: grab; }
+    canvas.dragging { cursor: grabbing; }
+
+    .hint {
+      position: fixed; bottom: 28px; left: 50%;
+      transform: translateX(-50%);
+      font-family: Georgia, serif; font-size: 11px;
+      letter-spacing: 0.28em; text-transform: uppercase;
+      color: rgba(248, 200, 210, 0.42);
+      pointer-events: none; white-space: nowrap;
+      opacity: 0; animation: hintLife 7s 2s ease-in-out forwards;
+    }
+    @keyframes hintLife {
+      0%,100% { opacity:0; } 12%,80% { opacity:1; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="c"></canvas>
+  <p class="hint">Drag · Scroll to zoom · Click · Double-click</p>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { EffectComposer }  from 'three/addons/postprocessing/EffectComposer.js';
+    import { RenderPass }      from 'three/addons/postprocessing/RenderPass.js';
+    import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+    import { OutputPass }      from 'three/addons/postprocessing/OutputPass.js';
+    import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+    // ── RENDERER ────────────────────────────────────────────
+    const canvas = document.getElementById('c');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.2;
+
+    // ── SCENE ────────────────────────────────────────────────
+    const scene = new THREE.Scene();
+
+    // Radial gradient background (canvas texture)
+    {
+      const bc = document.createElement('canvas');
+      bc.width = bc.height = 1024;
+      const bctx = bc.getContext('2d');
+      const g = bctx.createRadialGradient(512,512,0, 512,512,720);
+      g.addColorStop(0.0, '#300c1e');
+      g.addColorStop(0.3, '#1d0612');
+      g.addColorStop(0.7, '#12040a');
+      g.addColorStop(1.0, '#070005');
+      bctx.fillStyle = g;
+      bctx.fillRect(0,0,1024,1024);
+      scene.background = new THREE.CanvasTexture(bc);
+    }
+    scene.fog = new THREE.FogExp2(0x0a0208, 0.028);
+
+    // ── CAMERA (spherical controller) ───────────────────────
+    const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 120);
+    const sph = new THREE.Spherical(11, Math.PI / 2, 0);
+    let autoTheta = 0;
+
+    function applyCamera() {
+      camera.position.setFromSpherical(sph);
+      camera.lookAt(0, 0, 0);
+    }
+    applyCamera();
+
+    // ── ENVIRONMENT MAP ─────────────────────────────────────
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    scene.environment = pmrem.fromScene(new RoomEnvironment()).texture;
+    pmrem.dispose();
+
+    // ── POST-PROCESSING ─────────────────────────────────────
+    const composer = new EffectComposer(renderer);
+    composer.addPass(new RenderPass(scene, camera));
+    const bloom = new UnrealBloomPass(
+      new THREE.Vector2(window.innerWidth, window.innerHeight),
+      1.3, 0.50, 0.70
+    );
+    composer.addPass(bloom);
+    composer.addPass(new OutputPass());
+    let bloomTarget = 1.3;
+
+    // ── HEART GEOMETRY ──────────────────────────────────────
+    // Bezier defined with Y+ = UP:  humps at top, point at bottom.
+    // The old Three.js example used SVG/screen coords (Y+ down) which caused the flip.
+    function makeHeartGeo(depth = 0.28, bevel = 0.042) {
+      const shape = new THREE.Shape();
+      // Start at the cleft between the two lobes
+      shape.moveTo( 0,     0.28);
+      // Right upper lobe
+      shape.bezierCurveTo( 0.08,  0.62,  0.52,  0.54,  0.52,  0.10);
+      // Right side sweeping to the bottom point
+      shape.bezierCurveTo( 0.52, -0.18,  0.20, -0.45,  0,    -0.58);
+      // Left side from bottom point up
+      shape.bezierCurveTo(-0.20, -0.45, -0.52, -0.18, -0.52,  0.10);
+      // Left upper lobe back to cleft
+      shape.bezierCurveTo(-0.52,  0.54, -0.08,  0.62,  0,     0.28);
+
+      const geo = new THREE.ExtrudeGeometry(shape, {
+        depth, bevelEnabled: true,
+        bevelSegments: 10, bevelSize: bevel, bevelThickness: bevel,
+        steps: 2, curveSegments: 30,
+      });
+      // Centre geometry at origin
+      geo.computeBoundingBox();
+      const c = new THREE.Vector3();
+      geo.boundingBox.getCenter(c);
+      geo.translate(-c.x, -c.y, -c.z);
+      return geo;
+    }
+
+    const GEO_MAIN  = makeHeartGeo(0.28, 0.042);
+    const GEO_MED   = makeHeartGeo(0.24, 0.036);
+    const GEO_SMALL = makeHeartGeo(0.22, 0.030);
+
+    // ── MATERIALS & THEMES ──────────────────────────────────
+    function phys(col, emi, eiInt, metal, rough, extra = {}) {
+      return new THREE.MeshPhysicalMaterial({
+        color: new THREE.Color(col), emissive: new THREE.Color(emi),
+        emissiveIntensity: eiInt, metalness: metal, roughness: rough,
+        clearcoat: 0.9, clearcoatRoughness: 0.08, envMapIntensity: 1.4,
+        ...extra,
+      });
+    }
+
+    // Each theme: [mainCol, mainEmi, [orbitCol, orbitEmi] × 5]
+    const THEMES = [
+      { // Rose gold
+        main: [0xC84060, 0xE63946],
+        orbs: [[0xE63946,0xE63946],[0xB8880E,0xD4AF37],[0xF8D7DA,0xF8D7DA],[0xD8C4F1,0xD8C4F1],[0xa02040,0xff4060]],
+      },
+      { // Ice & Sapphire
+        main: [0x3058C0, 0x4060E8],
+        orbs: [[0x4060E8,0x6080ff],[0x20A8D0,0x20c8ff],[0xC0D8F8,0xC0D8F8],[0x9080F0,0xb0a0ff],[0x2040A0,0x5070ff]],
+      },
+      { // Champagne & Coral
+        main: [0xC0880A, 0xD4A020],
+        orbs: [[0xD4A020,0xD4AF37],[0xE07050,0xff8060],[0xFFF0C8,0xFFF0C8],[0xE0B880,0xE0C898],[0x986010,0xC09030]],
+      },
+      { // Amethyst
+        main: [0x7830C0, 0xA050E8],
+        orbs: [[0xD8C4F1,0xe0d0ff],[0xC060E0,0xe080ff],[0xffc8e8,0xffc8e8],[0x6040C0,0xa060ff],[0x501080,0x9040E0]],
+      },
+    ];
+    let themeIndex = 0;
+
+    const MAT_MAIN = phys(0xC84060, 0xE63946, 0.42, 0.82, 0.10);
+
+    const MAT_PALETTE = [
+      phys(0xE63946, 0xE63946, 0.55, 0.60, 0.18),
+      phys(0xB8880E, 0xD4AF37, 0.48, 0.92, 0.06),
+      phys(0xF8D7DA, 0xF8D7DA, 0.28, 0.15, 0.28, { transparent: true, opacity: 0.90 }),
+      phys(0xD8C4F1, 0xD8C4F1, 0.36, 0.40, 0.14),
+      phys(0xa02040, 0xff4060, 0.60, 0.55, 0.20),
+    ];
+
+    // Targets for smooth theme lerp
+    const themeMainCol = new THREE.Color(0xC84060);
+    const themeMainEmi = new THREE.Color(0xE63946);
+
+    // ── MAIN HEART ──────────────────────────────────────────
+    const mainHeart = new THREE.Mesh(GEO_MAIN, MAT_MAIN);
+    mainHeart.scale.setScalar(2.4);
+    mainHeart.userData.baseScale = 2.4;
+    scene.add(mainHeart);
+
+    // Glow shell — back-face oversized mesh for bloom halo
+    const glowShell = new THREE.Mesh(GEO_MAIN, new THREE.MeshBasicMaterial({
+      color: 0xE63946, transparent: true, opacity: 0.045, side: THREE.BackSide,
+    }));
+    glowShell.scale.setScalar(2.50);
+    scene.add(glowShell);
+
+    // ── ORBIT HEARTS ────────────────────────────────────────
+    const ORBIT_CFG = [
+      { r:4.3, speed:0.26, sz:1.92, mi:0, yo: 0.4, ph:0.00, ta: 0.25, tax:new THREE.Vector3(1,0,0.3).normalize() },
+      { r:5.0, speed:0.19, sz:1.56, mi:1, yo:-0.9, ph:1.05, ta:-0.18, tax:new THREE.Vector3(0.5,0,1).normalize() },
+      { r:3.8, speed:0.35, sz:1.32, mi:2, yo: 1.2, ph:2.09, ta: 0.35, tax:new THREE.Vector3(0.2,1,0.5).normalize() },
+      { r:5.5, speed:0.16, sz:1.77, mi:3, yo:-0.4, ph:3.14, ta:-0.28, tax:new THREE.Vector3(1,0.3,0).normalize() },
+      { r:4.1, speed:0.42, sz:1.15, mi:4, yo: 0.8, ph:4.19, ta: 0.20, tax:new THREE.Vector3(0,1,0.8).normalize() },
+      { r:5.8, speed:0.13, sz:2.16, mi:1, yo:-1.2, ph:5.24, ta:-0.40, tax:new THREE.Vector3(0.7,0,0.7).normalize() },
+      { r:4.6, speed:0.30, sz:1.25, mi:0, yo: 0.1, ph:0.52, ta: 0.15, tax:new THREE.Vector3(0.3,1,0).normalize() },
+      { r:3.5, speed:0.46, sz:1.00, mi:3, yo:-0.6, ph:1.57, ta:-0.32, tax:new THREE.Vector3(1,0.5,0.5).normalize() },
+    ];
+
+    const orbitHearts = ORBIT_CFG.map(cfg => {
+      const mat = MAT_PALETTE[cfg.mi];
+      const m = new THREE.Mesh(GEO_MED, mat);
+      m.scale.setScalar(cfg.sz);
+      m.userData = {
+        ...cfg,
+        angle:   cfg.ph,
+        baseEI:  mat.emissiveIntensity,
+        tCol:    null, tEmi: null,
+      };
+      scene.add(m);
+      return m;
+    });
+
+    // ── FLOAT HEARTS ────────────────────────────────────────
+    const floatHearts = Array.from({ length: 22 }, (_, i) => {
+      const mat = MAT_PALETTE[i % MAT_PALETTE.length].clone();
+      mat.emissiveIntensity += 0.3 + Math.random() * 0.4;
+      const m = new THREE.Mesh(GEO_SMALL, mat);
+
+      const θ = Math.random() * Math.PI * 2;
+      const φ = Math.acos(2 * Math.random() - 1);
+      const r = 3.0 + Math.random() * 6.0;
+      const home = new THREE.Vector3(
+        r * Math.sin(φ) * Math.cos(θ),
+        r * Math.sin(φ) * Math.sin(θ),
+        r * Math.cos(φ) - 5
+      );
+      m.position.copy(home);
+      m.scale.setScalar(0.18 + Math.random() * 0.50);
+      m.rotation.set(Math.random()*Math.PI*2, Math.random()*Math.PI*2, Math.random()*Math.PI*2);
+      m.userData = {
+        home,
+        rotY:  (Math.random() - 0.5) * 0.014,
+        rotX:  (Math.random() - 0.5) * 0.009,
+        phase: Math.random() * Math.PI * 2,
+        baseEI: mat.emissiveIntensity,
+        tCol: null, tEmi: null,
+      };
+      scene.add(m);
+      return m;
+    });
+
+    // ── PARTICLES ───────────────────────────────────────────
+    const N = 5500;
+    const pPos = new Float32Array(N * 3), pCol = new Float32Array(N * 3);
+    const PCOLS = [0xE63946,0xF8D7DA,0xD4AF37,0xD8C4F1,0xff8fa0,0xffc8a0].map(h => new THREE.Color(h));
+    for (let i = 0; i < N; i++) {
+      const r = 1.5 + Math.random() * 14;
+      const θ = Math.random() * Math.PI * 2;
+      const φ = Math.acos(2 * Math.random() - 1);
+      pPos[i*3]   = r * Math.sin(φ) * Math.cos(θ);
+      pPos[i*3+1] = r * Math.sin(φ) * Math.sin(θ);
+      pPos[i*3+2] = r * Math.cos(φ) - 7;
+      const c = PCOLS[i % PCOLS.length];
+      pCol[i*3] = c.r; pCol[i*3+1] = c.g; pCol[i*3+2] = c.b;
+    }
+    const pGeo = new THREE.BufferGeometry();
+    pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+    pGeo.setAttribute('color',    new THREE.BufferAttribute(pCol, 3));
+    const cloud = new THREE.Points(pGeo, new THREE.PointsMaterial({
+      size: 0.055, vertexColors: true, transparent: true, opacity: 0.72, sizeAttenuation: true,
+    }));
+    scene.add(cloud);
+
+    // ── LIGHTS ──────────────────────────────────────────────
+    scene.add(new THREE.AmbientLight(0xffe0e8, 0.9));
+    const DL = [
+      { l: new THREE.PointLight(0xff6080, 12, 28), r:5.5, s:0.38, yo: 2.5, ph:0          },
+      { l: new THREE.PointLight(0xffc090,  9, 22), r:4.2, s:0.27, yo:-2.0, ph:Math.PI*.5 },
+      { l: new THREE.PointLight(0xd4af37,  7, 20), r:3.5, s:0.52, yo: 0.0, ph:Math.PI    },
+      { l: new THREE.PointLight(0xe8d0ff,  6, 25), r:6.0, s:0.18, yo: 1.2, ph:Math.PI*1.5},
+    ];
+    DL.forEach(d => scene.add(d.l));
+
+    // ── BURST POOL ──────────────────────────────────────────
+    const burstPool = [];
+
+    function spawnBurst() {
+      const n = 10 + Math.floor(Math.random() * 6);
+      for (let i = 0; i < n; i++) {
+        const mat = MAT_PALETTE[i % MAT_PALETTE.length].clone();
+        mat.emissiveIntensity = 2.5;
+        mat.transparent = true;
+        const m = new THREE.Mesh(GEO_SMALL, mat);
+        m.scale.setScalar(0.08 + Math.random() * 0.18);
+        m.position.set(
+          (Math.random() - 0.5) * 0.7,
+          (Math.random() - 0.5) * 0.7,
+          (Math.random() - 0.5) * 0.3
+        );
+        const ang = (i / n) * Math.PI * 2 + Math.random() * 0.7;
+        const spd = 0.055 + Math.random() * 0.10;
+        m.userData = {
+          vx: Math.cos(ang) * spd, vy: 0.06 + Math.random() * 0.10,
+          vz: (Math.random() - 0.5) * 0.05, grav: -0.0024,
+          life: 1.0, decay: 0.013 + Math.random() * 0.009,
+          rotY: (Math.random() - 0.5) * 0.15,
+          rotZ: (Math.random() - 0.5) * 0.10,
+        };
+        burstPool.push(m);
+        scene.add(m);
+      }
+    }
+
+    // ── SHOCKWAVE ───────────────────────────────────────────
+    let shockTime = -1000;
+    const SHOCK_SPD  = 7.0;
+    const SHOCK_STR  = 0.13;
+    const SHOCK_DUR  = 0.35;
+
+    function applyShock(pos, t) {
+      const dist     = pos.length();
+      const localAge = (t - shockTime) - dist / SHOCK_SPD;
+      if (localAge > 0 && localAge < SHOCK_DUR) {
+        return Math.sin(localAge / SHOCK_DUR * Math.PI) * SHOCK_STR;
+      }
+      return 0;
+    }
+
+    // ── THEME CYCLING ───────────────────────────────────────
+    function cycleTheme() {
+      themeIndex = (themeIndex + 1) % THEMES.length;
+      const th = THEMES[themeIndex];
+
+      themeMainCol.set(th.main[0]);
+      themeMainEmi.set(th.main[1]);
+      glowShell.material.color.set(th.main[1]);
+
+      orbitHearts.forEach(m => {
+        const [c, e] = th.orbs[m.userData.mi];
+        m.userData.tCol = new THREE.Color(c);
+        m.userData.tEmi = new THREE.Color(e);
+      });
+      floatHearts.forEach((m, i) => {
+        const [c, e] = th.orbs[i % th.orbs.length];
+        m.userData.tCol = new THREE.Color(c);
+        m.userData.tEmi = new THREE.Color(e);
+      });
+
+      bloomTarget = 3.5;
+      setTimeout(() => { bloomTarget = 1.3; }, 350);
+    }
+
+    // ── POINTER CONTROLS ────────────────────────────────────
+    let mx = 0, my = 0;          // NDC mouse
+    let isDragging = false;
+    let dragLast  = { x: 0, y: 0 };
+
+    // Cursor world position projected onto z=0 plane
+    const cursorWorld = new THREE.Vector3();
+    const _ray = new THREE.Raycaster();
+    const _zPlane = new THREE.Plane(new THREE.Vector3(0,0,1), 0);
+
+    function refreshCursorWorld() {
+      _ray.setFromCamera(new THREE.Vector2(mx, my), camera);
+      _ray.ray.intersectPlane(_zPlane, cursorWorld);
+    }
+
+    canvas.addEventListener('pointerdown', e => {
+      isDragging = true;
+      dragLast = { x: e.clientX, y: e.clientY };
+      canvas.setPointerCapture(e.pointerId);
+      canvas.classList.add('dragging');
+    });
+
+    canvas.addEventListener('pointermove', e => {
+      mx = (e.clientX / window.innerWidth  - 0.5) *  2;
+      my = (e.clientY / window.innerHeight - 0.5) * -2;
+
+      if (isDragging) {
+        const dx = (e.clientX - dragLast.x) / window.innerWidth;
+        const dy = (e.clientY - dragLast.y) / window.innerHeight;
+        sph.theta -= dx * Math.PI * 2.5;
+        sph.phi   += dy * Math.PI * 1.5;
+        sph.phi    = Math.max(0.08, Math.min(Math.PI - 0.08, sph.phi));
+        dragLast   = { x: e.clientX, y: e.clientY };
+        autoTheta  = sph.theta;   // re-sync auto-rotation base
+      }
+    });
+
+    canvas.addEventListener('pointerup',     () => { isDragging = false; canvas.classList.remove('dragging'); });
+    canvas.addEventListener('pointercancel', () => { isDragging = false; canvas.classList.remove('dragging'); });
+
+    // Scroll → zoom
+    canvas.addEventListener('wheel', e => {
+      sph.radius = Math.max(3, Math.min(20, sph.radius + e.deltaY * 0.025));
+    }, { passive: true });
+
+    // Click → burst + shockwave  |  double-click → theme
+    let lastClick = 0;
+    canvas.addEventListener('click', () => {
+      const now = Date.now();
+      if (now - lastClick < 320) {
+        cycleTheme();
+      } else {
+        spawnBurst();
+        shockTime = clock.getElapsedTime();
+      }
+      lastClick = now;
+    });
+
+    // Touch fallback
+    canvas.addEventListener('touchend', e => {
+      e.preventDefault();
+    }, { passive: false });
+
+    // ── MAIN LOOP ────────────────────────────────────────────
+    const clock = new THREE.Clock();
+    const _tmp = new THREE.Vector3();
+
+    function tick() {
+      requestAnimationFrame(tick);
+      const t = clock.getElapsedTime();
+
+      // Camera: auto-orbit when not dragging
+      if (!isDragging) {
+        autoTheta += 0.0025;
+        sph.theta  = autoTheta;
+        sph.phi    = Math.PI / 2 + Math.sin(t * 0.07) * 0.18;
+      }
+      applyCamera();
+      refreshCursorWorld();
+
+      // Bloom strength lerp
+      bloom.strength += (bloomTarget - bloom.strength) * 0.09;
+
+      // ── MAIN HEART ────────────────────────────────────────
+      mainHeart.rotation.y = t * 0.20 + Math.sin(t * 0.22) * 0.30;
+      mainHeart.rotation.x = Math.sin(t * 0.16) * 0.11;
+      const beat  = 1 + Math.sin(t * 1.3) * 0.036;
+      const shock0 = applyShock(_tmp.set(0,0,0), t);
+      const ms = mainHeart.userData.baseScale * beat * (1 + shock0);
+      mainHeart.scale.setScalar(ms);
+      glowShell.scale.setScalar(ms * 1.04);
+      glowShell.material.opacity = 0.045 + shock0 * 0.18 + Math.sin(t*1.3)*0.015;
+
+      // Theme lerp – main
+      MAT_MAIN.color.lerp(themeMainCol, 0.03);
+      MAT_MAIN.emissive.lerp(themeMainEmi, 0.03);
+
+      // ── ORBIT HEARTS ──────────────────────────────────────
+      for (const m of orbitHearts) {
+        const d = m.userData;
+        d.angle += d.speed * 0.016;
+
+        // Tilted elliptical orbit
+        _tmp.set(Math.cos(d.angle) * d.r, 0, Math.sin(d.angle) * d.r * 0.6);
+        _tmp.applyAxisAngle(d.tax, d.ta);
+        _tmp.y += d.yo + Math.sin(t * 0.52 + d.ph) * 0.42;
+        m.position.copy(_tmp);
+
+        m.rotation.y = -d.angle + Math.PI;
+        m.rotation.x = Math.sin(t * 0.25 + d.ph) * 0.22;
+        m.rotation.z = Math.cos(t * 0.18 + d.ph) * 0.14;
+
+        // Shockwave displacement
+        const sk = applyShock(m.position, t);
+        m.scale.setScalar(d.sz * (1 + sk));
+
+        // Theme colour lerp
+        if (d.tCol) m.material.color.lerp(d.tCol, 0.03);
+        if (d.tEmi) m.material.emissive.lerp(d.tEmi, 0.03);
+
+        // Cursor proximity glow
+        const cd = m.position.distanceTo(cursorWorld);
+        const tEI = d.baseEI + (cd < 2.5 ? (1 - cd / 2.5) * 1.4 : 0);
+        m.material.emissiveIntensity += (tEI - m.material.emissiveIntensity) * 0.10;
+      }
+
+      // ── FLOAT HEARTS ──────────────────────────────────────
+      for (let i = 0; i < floatHearts.length; i++) {
+        const m = floatHearts[i];
+        const d = m.userData;
+
+        m.rotation.y += d.rotY;
+        m.rotation.x += d.rotX;
+
+        // Ambient drift
+        m.position.y += Math.sin(t * 0.38 + d.phase + i * 0.28) * 0.003;
+        m.position.x += Math.cos(t * 0.29 + d.phase + i * 0.44) * 0.002;
+
+        // Cursor attraction (with home restore)
+        const toMouse = _tmp.copy(cursorWorld).sub(m.position);
+        const md = toMouse.length();
+        if (md < 5.5 && md > 0.05) {
+          m.position.addScaledVector(toMouse.normalize(), (1 - md / 5.5) * 0.007);
+        }
+        _tmp.copy(d.home).sub(m.position);
+        m.position.addScaledVector(_tmp, 0.006);
+
+        // Shockwave push
+        const sk = applyShock(m.position, t);
+        if (sk > 0) {
+          _tmp.copy(m.position).normalize().multiplyScalar(sk * 0.55);
+          m.position.add(_tmp);
+        }
+
+        // Theme colour lerp
+        if (d.tCol) m.material.color.lerp(d.tCol, 0.03);
+        if (d.tEmi) m.material.emissive.lerp(d.tEmi, 0.03);
+
+        // Cursor proximity glow
+        const cd = m.position.distanceTo(cursorWorld);
+        const tEI = d.baseEI + (cd < 2.0 ? (1 - cd / 2.0) * 1.6 : 0);
+        m.material.emissiveIntensity += (tEI - m.material.emissiveIntensity) * 0.10;
+      }
+
+      // ── BURST HEARTS ──────────────────────────────────────
+      for (let i = burstPool.length - 1; i >= 0; i--) {
+        const h = burstPool[i]; const d = h.userData;
+        d.vy += d.grav;
+        h.position.x += d.vx; h.position.y += d.vy; h.position.z += d.vz;
+        h.rotation.y += d.rotY; h.rotation.z += d.rotZ;
+        d.life -= d.decay;
+        h.material.opacity = Math.max(0, d.life);
+        h.material.emissiveIntensity = d.life * 2.5;
+        if (d.life <= 0) { scene.remove(h); burstPool.splice(i, 1); }
+      }
+
+      // ── PARTICLES ─────────────────────────────────────────
+      cloud.rotation.y = t * 0.022;
+      cloud.rotation.x = t * 0.009;
+
+      // ── DYNAMIC LIGHTS ────────────────────────────────────
+      for (const { l, r, s, yo, ph } of DL) {
+        l.position.set(
+          Math.cos(t * s + ph) * r,
+          yo + Math.sin(t * s * 0.65 + ph) * 1.8,
+          Math.sin(t * s + ph) * r
+        );
+      }
+
+      composer.render();
+    }
+
+    tick();
+
+    // ── RESIZE ──────────────────────────────────────────────
+    window.addEventListener('resize', () => {
+      const w = window.innerWidth, h = window.innerHeight;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+      composer.setSize(w, h);
+    });
+  </script>
+</body>
+</html>
