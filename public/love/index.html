@@ -22,11 +22,46 @@
     @keyframes hintLife {
       0%,100% { opacity:0; } 12%,80% { opacity:1; }
     }
+
+    .quote-overlay {
+      position: fixed; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center; pointer-events: none;
+      opacity: 0; transition: opacity 0.6s ease;
+      z-index: 10; width: 90%; max-width: 560px;
+    }
+    .quote-overlay.visible { opacity: 1; }
+    .quote-inner {
+      display: inline-block;
+      padding: 28px 36px;
+      background: radial-gradient(ellipse at center, rgba(80,10,30,0.72) 0%, rgba(20,4,12,0.55) 100%);
+      border: 1px solid rgba(230, 57, 70, 0.22);
+      border-radius: 4px;
+      backdrop-filter: blur(6px);
+    }
+    .quote-text {
+      font-family: Georgia, serif; font-size: 1.25rem;
+      color: rgba(255, 218, 224, 0.96);
+      text-shadow: 0 0 18px rgba(230, 57, 70, 0.7), 0 0 40px rgba(230, 57, 70, 0.3);
+      line-height: 1.65; letter-spacing: 0.04em;
+    }
+    .quote-author {
+      font-family: Georgia, serif; font-size: 0.78rem;
+      color: rgba(248, 200, 210, 0.58);
+      letter-spacing: 0.22em; text-transform: uppercase;
+      margin-top: 14px;
+    }
   </style>
 </head>
 <body>
   <canvas id="c"></canvas>
-  <p class="hint">Drag · Scroll to zoom · Click · Double-click</p>
+  <p class="hint">Drag · Scroll to zoom · Click a heart · Double-click</p>
+  <div class="quote-overlay" id="quoteOverlay">
+    <div class="quote-inner">
+      <p class="quote-text" id="quoteText"></p>
+      <p class="quote-author" id="quoteAuthor"></p>
+    </div>
+  </div>
 
   <script type="importmap">
   {
@@ -100,19 +135,12 @@
     let bloomTarget = 1.3;
 
     // ── HEART GEOMETRY ──────────────────────────────────────
-    // Bezier defined with Y+ = UP:  humps at top, point at bottom.
-    // The old Three.js example used SVG/screen coords (Y+ down) which caused the flip.
     function makeHeartGeo(depth = 0.28, bevel = 0.042) {
       const shape = new THREE.Shape();
-      // Start at the cleft between the two lobes
       shape.moveTo( 0,     0.28);
-      // Right upper lobe
       shape.bezierCurveTo( 0.08,  0.62,  0.52,  0.54,  0.52,  0.10);
-      // Right side sweeping to the bottom point
       shape.bezierCurveTo( 0.52, -0.18,  0.20, -0.45,  0,    -0.58);
-      // Left side from bottom point up
       shape.bezierCurveTo(-0.20, -0.45, -0.52, -0.18, -0.52,  0.10);
-      // Left upper lobe back to cleft
       shape.bezierCurveTo(-0.52,  0.54, -0.08,  0.62,  0,     0.28);
 
       const geo = new THREE.ExtrudeGeometry(shape, {
@@ -120,7 +148,6 @@
         bevelSegments: 10, bevelSize: bevel, bevelThickness: bevel,
         steps: 2, curveSegments: 30,
       });
-      // Centre geometry at origin
       geo.computeBoundingBox();
       const c = new THREE.Vector3();
       geo.boundingBox.getCenter(c);
@@ -142,7 +169,6 @@
       });
     }
 
-    // Each theme: [mainCol, mainEmi, [orbitCol, orbitEmi] × 5]
     const THEMES = [
       { // Rose gold
         main: [0xC84060, 0xE63946],
@@ -173,7 +199,6 @@
       phys(0xa02040, 0xff4060, 0.60, 0.55, 0.20),
     ];
 
-    // Targets for smooth theme lerp
     const themeMainCol = new THREE.Color(0xC84060);
     const themeMainEmi = new THREE.Color(0xE63946);
 
@@ -183,7 +208,6 @@
     mainHeart.userData.baseScale = 2.4;
     scene.add(mainHeart);
 
-    // Glow shell — back-face oversized mesh for bloom halo
     const glowShell = new THREE.Mesh(GEO_MAIN, new THREE.MeshBasicMaterial({
       color: 0xE63946, transparent: true, opacity: 0.045, side: THREE.BackSide,
     }));
@@ -211,13 +235,15 @@
         angle:   cfg.ph,
         baseEI:  mat.emissiveIntensity,
         tCol:    null, tEmi: null,
+        orbitCfg: cfg,
       };
       scene.add(m);
       return m;
     });
 
     // ── FLOAT HEARTS ────────────────────────────────────────
-    const floatHearts = Array.from({ length: 22 }, (_, i) => {
+    const FLOAT_COUNT = 22;
+    const floatHearts = Array.from({ length: FLOAT_COUNT }, (_, i) => {
       const mat = MAT_PALETTE[i % MAT_PALETTE.length].clone();
       mat.emissiveIntensity += 0.3 + Math.random() * 0.4;
       const m = new THREE.Mesh(GEO_SMALL, mat);
@@ -240,6 +266,7 @@
         phase: Math.random() * Math.PI * 2,
         baseEI: mat.emissiveIntensity,
         tCol: null, tEmi: null,
+        floatIdx: i,
       };
       scene.add(m);
       return m;
@@ -280,7 +307,10 @@
     // ── BURST POOL ──────────────────────────────────────────
     const burstPool = [];
 
-    function spawnBurst() {
+    function spawnBurst(origin) {
+      const ox = origin ? origin.x : 0;
+      const oy = origin ? origin.y : 0;
+      const oz = origin ? origin.z : 0;
       const n = 10 + Math.floor(Math.random() * 6);
       for (let i = 0; i < n; i++) {
         const mat = MAT_PALETTE[i % MAT_PALETTE.length].clone();
@@ -289,9 +319,9 @@
         const m = new THREE.Mesh(GEO_SMALL, mat);
         m.scale.setScalar(0.08 + Math.random() * 0.18);
         m.position.set(
-          (Math.random() - 0.5) * 0.7,
-          (Math.random() - 0.5) * 0.7,
-          (Math.random() - 0.5) * 0.3
+          ox + (Math.random() - 0.5) * 0.7,
+          oy + (Math.random() - 0.5) * 0.7,
+          oz + (Math.random() - 0.5) * 0.3
         );
         const ang = (i / n) * Math.PI * 2 + Math.random() * 0.7;
         const spd = 0.055 + Math.random() * 0.10;
@@ -346,12 +376,150 @@
       setTimeout(() => { bloomTarget = 1.3; }, 350);
     }
 
+    // ── QUOTES ──────────────────────────────────────────────
+    const QUOTES = [
+      { text: "You are loved more than you will ever know.", author: "" },
+      { text: "The best thing to hold onto in life is each other.", author: "Audrey Hepburn" },
+      { text: "You are my sun, my moon, and all my stars.", author: "E.E. Cummings" },
+      { text: "I carry your heart with me. I carry it in my heart.", author: "E.E. Cummings" },
+      { text: "In all the world, there is no heart for me like yours.", author: "Maya Angelou" },
+      { text: "I love you not only for what you are, but for what I am when I am with you.", author: "Roy Croft" },
+      { text: "To the world you may be one person, but to one person you may be the world.", author: "Bill Wilson" },
+      { text: "You are the finest, loveliest, tenderest, and most beautiful person I have ever known.", author: "F. Scott Fitzgerald" },
+      { text: "Every love story is beautiful, but ours is my favourite.", author: "" },
+      { text: "You make my heart smile.", author: "" },
+      { text: "Love is not something you find. Love is something that finds you.", author: "Loretta Young" },
+      { text: "Where there is love, there is life.", author: "Mahatma Gandhi" },
+      { text: "The heart has reasons that reason does not know.", author: "Blaise Pascal" },
+      { text: "You deserve all the love you keep trying to give everyone else.", author: "" },
+      { text: "You are braver than you believe, stronger than you seem, and smarter than you think.", author: "A.A. Milne" },
+      { text: "Believe you can and you're halfway there.", author: "Theodore Roosevelt" },
+      { text: "You are enough. You have always been enough.", author: "" },
+      { text: "Keep going. Everything you need will come to you at the perfect time.", author: "" },
+      { text: "Your value doesn't decrease based on someone's inability to see your worth.", author: "" },
+      { text: "A gentle reminder: you are doing better than you think.", author: "" },
+      { text: "Be patient with yourself. You are a work of art still in progress.", author: "" },
+      { text: "Stars can't shine without darkness.", author: "" },
+      { text: "You are capable of amazing things.", author: "" },
+      { text: "The flower that blooms in adversity is the most rare and beautiful of all.", author: "" },
+      { text: "Happiness is a direction, not a destination.", author: "" },
+      { text: "You are the author of your own story — make it a love story.", author: "" },
+      { text: "Be the love you wish to see in the world.", author: "" },
+      { text: "Every day is a fresh beginning.", author: "" },
+      { text: "Your heart knows the way. Run in that direction.", author: "Rumi" },
+      { text: "Let yourself be loved.", author: "" },
+    ];
+
+    const quoteOverlay = document.getElementById('quoteOverlay');
+    const quoteTextEl  = document.getElementById('quoteText');
+    const quoteAuthEl  = document.getElementById('quoteAuthor');
+    let quoteTimer = null;
+    let lastQuoteIdx = -1;
+
+    function showQuote() {
+      let idx;
+      do { idx = Math.floor(Math.random() * QUOTES.length); } while (idx === lastQuoteIdx);
+      lastQuoteIdx = idx;
+      const q = QUOTES[idx];
+      quoteTextEl.textContent = `“${q.text}”`;
+      quoteAuthEl.textContent = q.author ? `— ${q.author}` : '';
+      quoteOverlay.classList.add('visible');
+      if (quoteTimer) clearTimeout(quoteTimer);
+      quoteTimer = setTimeout(() => quoteOverlay.classList.remove('visible'), 3800);
+    }
+
+    // ── POP ANIMATION POOL ──────────────────────────────────
+    const poppingPool = [];
+
+    function popHeart(mesh) {
+      if (mesh.userData._popping) return;
+      mesh.userData._popping = true;
+
+      // Remove from active arrays so it stops updating normally
+      const oi = orbitHearts.indexOf(mesh);
+      const fi = floatHearts.indexOf(mesh);
+      if (oi !== -1) orbitHearts.splice(oi, 1);
+      if (fi !== -1) floatHearts.splice(fi, 1);
+
+      // Clone material so the pop fade doesn't affect sibling hearts
+      const popMat = mesh.material.clone();
+      popMat.transparent = true;
+      popMat.emissiveIntensity = 2.8;
+      mesh.material = popMat;
+
+      const originPos = mesh.position.clone();
+      const originScale = mesh.scale.x;
+
+      poppingPool.push({ mesh, life: 1.0, originScale, originPos });
+
+      // Spawn a denser burst at the heart's world position
+      spawnBurst(originPos);
+
+      // Schedule replacement
+      const orbitCfg   = mesh.userData.orbitCfg ?? null;
+      const floatData   = orbitCfg ? null : { idx: mesh.userData.floatIdx };
+      setTimeout(() => {
+        if (orbitCfg) {
+          spawnOrbitHeart(orbitCfg);
+        } else {
+          spawnFloatHeart(floatData.idx);
+        }
+      }, 1600);
+    }
+
+    function spawnOrbitHeart(cfg) {
+      const mat = MAT_PALETTE[cfg.mi];
+      const m = new THREE.Mesh(GEO_MED, mat);
+      m.scale.setScalar(cfg.sz);
+      m.userData = {
+        ...cfg,
+        angle:    cfg.ph,
+        baseEI:   mat.emissiveIntensity,
+        tCol:     null, tEmi: null,
+        orbitCfg: cfg,
+      };
+      scene.add(m);
+      orbitHearts.push(m);
+    }
+
+    function spawnFloatHeart(idx) {
+      const mat = MAT_PALETTE[idx % MAT_PALETTE.length].clone();
+      mat.emissiveIntensity += 0.3 + Math.random() * 0.4;
+      const m = new THREE.Mesh(GEO_SMALL, mat);
+      const θ = Math.random() * Math.PI * 2;
+      const φ = Math.acos(2 * Math.random() - 1);
+      const r = 3.0 + Math.random() * 6.0;
+      const home = new THREE.Vector3(
+        r * Math.sin(φ) * Math.cos(θ),
+        r * Math.sin(φ) * Math.sin(θ),
+        r * Math.cos(φ) - 5
+      );
+      m.position.copy(home);
+      m.scale.setScalar(0.18 + Math.random() * 0.50);
+      m.rotation.set(Math.random()*Math.PI*2, Math.random()*Math.PI*2, Math.random()*Math.PI*2);
+      m.userData = {
+        home,
+        rotY:   (Math.random() - 0.5) * 0.014,
+        rotX:   (Math.random() - 0.5) * 0.009,
+        phase:  Math.random() * Math.PI * 2,
+        baseEI: mat.emissiveIntensity,
+        tCol: null, tEmi: null,
+        floatIdx: idx,
+      };
+      scene.add(m);
+      floatHearts.push(m);
+    }
+
+    // ── RAYCASTER FOR HEART CLICK ────────────────────────────
+    const _pickRay = new THREE.Raycaster();
+    const _pickMouse = new THREE.Vector2();
+
     // ── POINTER CONTROLS ────────────────────────────────────
-    let mx = 0, my = 0;          // NDC mouse
+    let mx = 0, my = 0;
     let isDragging = false;
     let dragLast  = { x: 0, y: 0 };
+    let dragMoved = false;
 
-    // Cursor world position projected onto z=0 plane
     const cursorWorld = new THREE.Vector3();
     const _ray = new THREE.Raycaster();
     const _zPlane = new THREE.Plane(new THREE.Vector3(0,0,1), 0);
@@ -363,6 +531,7 @@
 
     canvas.addEventListener('pointerdown', e => {
       isDragging = true;
+      dragMoved  = false;
       dragLast = { x: e.clientX, y: e.clientY };
       canvas.setPointerCapture(e.pointerId);
       canvas.classList.add('dragging');
@@ -375,36 +544,55 @@
       if (isDragging) {
         const dx = (e.clientX - dragLast.x) / window.innerWidth;
         const dy = (e.clientY - dragLast.y) / window.innerHeight;
+        if (Math.abs(dx) > 0.002 || Math.abs(dy) > 0.002) dragMoved = true;
         sph.theta -= dx * Math.PI * 2.5;
         sph.phi   += dy * Math.PI * 1.5;
         sph.phi    = Math.max(0.08, Math.min(Math.PI - 0.08, sph.phi));
         dragLast   = { x: e.clientX, y: e.clientY };
-        autoTheta  = sph.theta;   // re-sync auto-rotation base
+        autoTheta  = sph.theta;
       }
     });
 
     canvas.addEventListener('pointerup',     () => { isDragging = false; canvas.classList.remove('dragging'); });
     canvas.addEventListener('pointercancel', () => { isDragging = false; canvas.classList.remove('dragging'); });
 
-    // Scroll → zoom
     canvas.addEventListener('wheel', e => {
       sph.radius = Math.max(3, Math.min(20, sph.radius + e.deltaY * 0.025));
     }, { passive: true });
 
-    // Click → burst + shockwave  |  double-click → theme
     let lastClick = 0;
-    canvas.addEventListener('click', () => {
+    canvas.addEventListener('click', e => {
+      if (dragMoved) return; // suppress click after drag
+
       const now = Date.now();
-      if (now - lastClick < 320) {
-        cycleTheme();
+
+      // Raycast against all non-popping orbit + float hearts
+      _pickMouse.set(
+        (e.clientX / window.innerWidth)  * 2 - 1,
+       -(e.clientY / window.innerHeight) * 2 + 1
+      );
+      _pickRay.setFromCamera(_pickMouse, camera);
+
+      const targets = [...orbitHearts, ...floatHearts];
+      const hits = _pickRay.intersectObjects(targets, false);
+
+      if (hits.length > 0) {
+        const hitMesh = hits[0].object;
+        popHeart(hitMesh);
+        showQuote();
+        bloomTarget = 2.8;
+        setTimeout(() => { bloomTarget = 1.3; }, 400);
       } else {
-        spawnBurst();
-        shockTime = clock.getElapsedTime();
+        if (now - lastClick < 320) {
+          cycleTheme();
+        } else {
+          spawnBurst();
+          shockTime = clock.getElapsedTime();
+        }
+        lastClick = now;
       }
-      lastClick = now;
     });
 
-    // Touch fallback
     canvas.addEventListener('touchend', e => {
       e.preventDefault();
     }, { passive: false });
@@ -417,7 +605,6 @@
       requestAnimationFrame(tick);
       const t = clock.getElapsedTime();
 
-      // Camera: auto-orbit when not dragging
       if (!isDragging) {
         autoTheta += 0.0025;
         sph.theta  = autoTheta;
@@ -426,7 +613,6 @@
       applyCamera();
       refreshCursorWorld();
 
-      // Bloom strength lerp
       bloom.strength += (bloomTarget - bloom.strength) * 0.09;
 
       // ── MAIN HEART ────────────────────────────────────────
@@ -439,7 +625,6 @@
       glowShell.scale.setScalar(ms * 1.04);
       glowShell.material.opacity = 0.045 + shock0 * 0.18 + Math.sin(t*1.3)*0.015;
 
-      // Theme lerp – main
       MAT_MAIN.color.lerp(themeMainCol, 0.03);
       MAT_MAIN.emissive.lerp(themeMainEmi, 0.03);
 
@@ -448,7 +633,6 @@
         const d = m.userData;
         d.angle += d.speed * 0.016;
 
-        // Tilted elliptical orbit
         _tmp.set(Math.cos(d.angle) * d.r, 0, Math.sin(d.angle) * d.r * 0.6);
         _tmp.applyAxisAngle(d.tax, d.ta);
         _tmp.y += d.yo + Math.sin(t * 0.52 + d.ph) * 0.42;
@@ -458,15 +642,12 @@
         m.rotation.x = Math.sin(t * 0.25 + d.ph) * 0.22;
         m.rotation.z = Math.cos(t * 0.18 + d.ph) * 0.14;
 
-        // Shockwave displacement
         const sk = applyShock(m.position, t);
         m.scale.setScalar(d.sz * (1 + sk));
 
-        // Theme colour lerp
         if (d.tCol) m.material.color.lerp(d.tCol, 0.03);
         if (d.tEmi) m.material.emissive.lerp(d.tEmi, 0.03);
 
-        // Cursor proximity glow
         const cd = m.position.distanceTo(cursorWorld);
         const tEI = d.baseEI + (cd < 2.5 ? (1 - cd / 2.5) * 1.4 : 0);
         m.material.emissiveIntensity += (tEI - m.material.emissiveIntensity) * 0.10;
@@ -480,11 +661,9 @@
         m.rotation.y += d.rotY;
         m.rotation.x += d.rotX;
 
-        // Ambient drift
         m.position.y += Math.sin(t * 0.38 + d.phase + i * 0.28) * 0.003;
         m.position.x += Math.cos(t * 0.29 + d.phase + i * 0.44) * 0.002;
 
-        // Cursor attraction (with home restore)
         const toMouse = _tmp.copy(cursorWorld).sub(m.position);
         const md = toMouse.length();
         if (md < 5.5 && md > 0.05) {
@@ -493,21 +672,36 @@
         _tmp.copy(d.home).sub(m.position);
         m.position.addScaledVector(_tmp, 0.006);
 
-        // Shockwave push
         const sk = applyShock(m.position, t);
         if (sk > 0) {
           _tmp.copy(m.position).normalize().multiplyScalar(sk * 0.55);
           m.position.add(_tmp);
         }
 
-        // Theme colour lerp
         if (d.tCol) m.material.color.lerp(d.tCol, 0.03);
         if (d.tEmi) m.material.emissive.lerp(d.tEmi, 0.03);
 
-        // Cursor proximity glow
         const cd = m.position.distanceTo(cursorWorld);
         const tEI = d.baseEI + (cd < 2.0 ? (1 - cd / 2.0) * 1.6 : 0);
         m.material.emissiveIntensity += (tEI - m.material.emissiveIntensity) * 0.10;
+      }
+
+      // ── POPPING HEARTS ────────────────────────────────────
+      for (let i = poppingPool.length - 1; i >= 0; i--) {
+        const p = poppingPool[i];
+        p.life -= 0.032;
+        // Scale pops up sharply then we fade — gives a "burst" feel
+        const popScale = p.originScale * (1 + (1 - p.life) * 1.6);
+        p.mesh.scale.setScalar(popScale);
+        p.mesh.material.opacity = Math.max(0, p.life * p.life);
+        p.mesh.material.emissiveIntensity = p.life * 2.8;
+        p.mesh.rotation.y += 0.12;
+        p.mesh.rotation.z += 0.06;
+        if (p.life <= 0) {
+          scene.remove(p.mesh);
+          p.mesh.material.dispose();
+          poppingPool.splice(i, 1);
+        }
       }
 
       // ── BURST HEARTS ──────────────────────────────────────
