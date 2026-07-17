@@ -1,31 +1,29 @@
-import Link from 'next/link';
+import { BLOG_URL, SITE, SITE_URL } from '@/data/portfolio';
 
 export default function BlogLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <div className='min-h-screen bg-white font-[family-name:var(--font-onest)]'>
-      <nav className='sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b-[3px] border-[#0B0B0B]'>
-        <div className='max-w-7xl mx-auto px-6 h-[68px] flex items-center justify-between'>
-          <Link href='/' className='text-2xl font-[700] tracking-tight hover:opacity-70 transition-opacity'>
-            ttlam.
-          </Link>
-          <div className='flex items-center gap-6'>
-            <Link
-              href='/'
-              className='text-sm font-[500] hover:opacity-50 transition-opacity'
-            >
-              ← Home
-            </Link>
-            <Link
-              href='/blog'
-              className='text-sm font-[700] px-4 py-2 border-[3px] border-[#0B0B0B] rounded-full shadow-[3px_3px_0_#0B0B0B] transition-all duration-[250ms] hover:-translate-x-0.5 hover:-translate-y-0.5'
-              style={{ backgroundColor: '#FDB927' }}
-            >
-              Blog
-            </Link>
-          </div>
-        </div>
-      </nav>
-      <div className='max-w-3xl mx-auto px-6 py-16'>{children}</div>
-    </div>
-  );
+	return (
+		<div className='min-h-screen bg-white text-zinc-900 font-[family-name:var(--font-onest)]'>
+			<nav className='sticky top-0 z-50 bg-white/90 backdrop-blur-sm border-b border-zinc-200'>
+				<div className='container mx-auto px-6 h-[68px] flex items-center justify-between'>
+					<a href={SITE_URL} className='flex items-center gap-3 hover:opacity-60 transition-opacity'>
+						{/* eslint-disable-next-line @next/next/no-img-element */}
+						<img src='/logo-mark.png' alt='TL monogram' className='h-10 w-10 invert' />
+						<span className='flex flex-col'>
+							<span className='font-bold text-lg tracking-tighter uppercase leading-none'>{SITE.brand}</span>
+							<span className='text-[10px] tracking-widest text-zinc-500 mt-1'>{SITE.tagline}</span>
+						</span>
+					</a>
+					<div className='flex items-center gap-8 text-xs uppercase tracking-widest'>
+						<a href={SITE_URL} className='hover:text-zinc-500 transition-colors'>
+							Index
+						</a>
+						<a href={BLOG_URL} className='border-b border-zinc-900 pb-0.5'>
+							Journal
+						</a>
+					</div>
+				</div>
+			</nav>
+			<div className='max-w-3xl mx-auto px-6 py-16'>{children}</div>
+		</div>
+	);
 }

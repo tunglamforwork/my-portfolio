@@ -16,6 +16,16 @@ export function middleware(request: NextRequest) {
     return NextResponse.rewrite(url);
   }
 
+  // On the main domain, /blog lives at blog.ttlam.dev
+  if (hostname === 'ttlam.dev' || hostname === 'www.ttlam.dev') {
+    const { pathname, search } = request.nextUrl;
+
+    if (pathname === '/blog' || pathname.startsWith('/blog/')) {
+      const rest = pathname.slice('/blog'.length) || '/';
+      return NextResponse.redirect(`https://blog.ttlam.dev${rest}${search}`, 308);
+    }
+  }
+
   return NextResponse.next();
 }
 

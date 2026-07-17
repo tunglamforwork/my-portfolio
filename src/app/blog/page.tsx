@@ -1,8 +1,10 @@
 import { getBlogPosts } from '@/data/blog';
-import Link from 'next/link';
+import { BLOG_URL } from '@/data/portfolio';
+import { formatShortDate } from '@/lib/utils';
+import { ArrowUpRight } from 'lucide-react';
 
 export const metadata = {
-	title: 'Blog',
+	title: 'Journal',
 	description: 'Thoughts on software engineering, AI, and building products.',
 };
 
@@ -17,60 +19,46 @@ export default async function BlogPage() {
 
 	return (
 		<section>
-			<div className='mb-12'>
-				<p className='text-[11px] font-[700] tracking-[0.2em] uppercase mb-3' style={{ color: '#5B5B5B' }}>
-					Writing
-				</p>
-				<h1 className='text-4xl md:text-5xl font-[700] leading-tight'>Blog</h1>
-				<p className='mt-3 text-[17px] font-[500] leading-relaxed' style={{ color: '#5B5B5B' }}>
+			<div className='mb-16'>
+				<p className='text-xs font-bold uppercase tracking-widest text-zinc-500 mb-4'>Writing</p>
+				<h1 className='text-5xl md:text-6xl font-light tracking-tighter uppercase'>Journal</h1>
+				<p className='mt-4 text-sm leading-relaxed text-zinc-500 max-w-md'>
 					Thoughts on software engineering, AI, and building products.
 				</p>
 			</div>
 
 			{sorted.length === 0 ? (
-				<div
-					className='p-8 border-[3px] border-[#0B0B0B] rounded-[24px] shadow-[6px_6px_0_#0B0B0B] text-center'
-					style={{ backgroundColor: '#F5F3EE' }}
-				>
-					<p className='font-[500]' style={{ color: '#5B5B5B' }}>
-						No posts yet. Check back soon.
-					</p>
+				<div className='py-16 border-y border-zinc-200 text-center'>
+					<p className='text-sm text-zinc-500'>No posts yet. Check back soon.</p>
 				</div>
 			) : (
-				<div className='space-y-5'>
-					{sorted.map((post, i) => (
-						<Link key={post.slug} href={`https://blog.ttlam.dev/${post.slug}`} className='block group'>
-							<div
-								className='p-6 border-[3px] border-[#0B0B0B] rounded-[24px] shadow-[6px_6px_0_#0B0B0B] bg-white transition-all duration-[250ms] ease-in-out group-hover:-translate-x-1 group-hover:-translate-y-1'
-							>
-								<div className='flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3'>
-									<div className='flex-1'>
-										<h2 className='text-[19px] font-[700] leading-snug group-hover:opacity-70 transition-opacity'>
-											{post.metadata.title}
-										</h2>
-										{post.metadata.summary && (
-											<p
-												className='mt-1.5 text-[14px] font-[500] leading-relaxed line-clamp-2'
-												style={{ color: '#5B5B5B' }}
-											>
-												{post.metadata.summary}
-											</p>
-										)}
-									</div>
-									<span
-										className='text-[12px] font-[700] px-3 py-1.5 border-[2px] border-[#0B0B0B] rounded-full whitespace-nowrap self-start'
-										style={{ backgroundColor: i % 2 === 0 ? '#C7ECFF' : '#FDB92733' }}
-									>
-										{new Date(post.metadata.publishedAt).toLocaleDateString('en-US', {
-											year: 'numeric',
-											month: 'short',
-											day: 'numeric',
-										})}
-									</span>
-								</div>
+				<div className='flex flex-col'>
+					{sorted.map(post => (
+						<a
+							key={post.slug}
+							href={`${BLOG_URL}/${post.slug}`}
+							className='group py-8 border-t border-zinc-200 hover:bg-zinc-50 transition-colors'
+						>
+							<div className='flex justify-between items-baseline gap-6 mb-2'>
+								<span className='text-xs tracking-widest text-zinc-500'>
+									{formatShortDate(post.metadata.publishedAt)}
+								</span>
+								<ArrowUpRight
+									size={18}
+									className='shrink-0 opacity-0 group-hover:opacity-100 transition-opacity'
+								/>
 							</div>
-						</Link>
+							<h2 className='text-2xl md:text-3xl font-light tracking-tight group-hover:pl-4 transition-all duration-300'>
+								{post.metadata.title}
+							</h2>
+							{post.metadata.summary && (
+								<p className='mt-2 text-sm leading-relaxed text-zinc-500 line-clamp-2'>
+									{post.metadata.summary}
+								</p>
+							)}
+						</a>
 					))}
+					<div className='w-full border-b border-zinc-200'></div>
 				</div>
 			)}
 		</section>

@@ -5,6 +5,12 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+export function formatShortDate(date: string) {
+  return new Date(date)
+    .toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" })
+    .toUpperCase();
+}
+
 export function formatDate(date: string) {
   let currentDate = new Date().getTime();
   if (!date.includes("T")) {

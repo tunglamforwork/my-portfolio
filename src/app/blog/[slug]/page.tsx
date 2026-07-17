@@ -1,8 +1,9 @@
 import { getBlogPosts, getPost } from '@/data/blog';
+import { BLOG_URL } from '@/data/portfolio';
 import { DATA } from '@/data/resume';
 import { formatDate } from '@/lib/utils';
+import { ArrowLeft } from 'lucide-react';
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 
@@ -70,37 +71,32 @@ export default async function BlogPost({ params }: { params: { slug: string } })
 			/>
 
 			{/* Back link */}
-			<Link
-				href='https://blog.ttlam.dev'
-				className='inline-flex items-center gap-2 text-sm font-[700] px-4 py-2 border-[3px] border-[#0B0B0B] rounded-full shadow-[3px_3px_0_#0B0B0B] mb-10 transition-all duration-[250ms] hover:-translate-x-0.5 hover:-translate-y-0.5'
-				style={{ backgroundColor: '#FDB927' }}
+			<a
+				href={BLOG_URL}
+				className='group inline-flex items-center gap-2 text-xs uppercase tracking-widest mb-12 hover:text-zinc-500 transition-colors'
 			>
-				← All Posts
-			</Link>
+				<ArrowLeft size={14} className='group-hover:-translate-x-1 transition-transform' />
+				All Posts
+			</a>
 
 			{/* Header */}
-			<div className='mb-10 pb-8 border-b-[3px] border-[#0B0B0B]'>
+			<div className='mb-12 pb-10 border-b border-zinc-200'>
 				<Suspense fallback={<div className='h-5' />}>
-					<span
-						className='inline-block text-[12px] font-[700] tracking-[0.15em] uppercase px-3 py-1 border-[2px] border-[#0B0B0B] rounded-full mb-4'
-						style={{ backgroundColor: '#C7ECFF' }}
-					>
+					<p className='text-xs tracking-widest text-zinc-500 uppercase mb-4'>
 						{formatDate(post.metadata.publishedAt)}
-					</span>
+					</p>
 				</Suspense>
-				<h1 className='text-3xl md:text-4xl font-[700] leading-tight tracking-tight'>
+				<h1 className='text-3xl md:text-5xl font-light leading-tight tracking-tighter'>
 					{post.metadata.title}
 				</h1>
 				{post.metadata.summary && (
-					<p className='mt-3 text-[17px] font-[500] leading-relaxed' style={{ color: '#5B5B5B' }}>
-						{post.metadata.summary}
-					</p>
+					<p className='mt-4 text-sm leading-relaxed text-zinc-500'>{post.metadata.summary}</p>
 				)}
 			</div>
 
 			{/* Content */}
 			<div
-				className='prose prose-lg max-w-none prose-headings:font-[700] prose-headings:tracking-tight prose-a:text-[#2F81F7] prose-a:font-[700] prose-a:no-underline hover:prose-a:underline prose-code:font-mono prose-pre:border-[3px] prose-pre:border-[#0B0B0B] prose-pre:shadow-[4px_4px_0_#0B0B0B] prose-pre:rounded-[16px]'
+				className='prose prose-zinc prose-lg max-w-none prose-headings:font-medium prose-headings:tracking-tight prose-a:text-zinc-900 prose-a:font-medium prose-a:underline prose-a:underline-offset-4 prose-a:decoration-zinc-300 hover:prose-a:decoration-zinc-900 prose-code:font-mono prose-pre:rounded-none prose-pre:border prose-pre:border-zinc-200 prose-img:rounded-none'
 				dangerouslySetInnerHTML={{ __html: post.source }}
 			/>
 		</article>

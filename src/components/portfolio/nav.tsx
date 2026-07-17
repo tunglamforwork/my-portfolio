@@ -1,39 +1,111 @@
 'use client';
 
-import { C } from './constants';
-
-const NAV_LINKS = ['Work', 'Experience', 'About', 'Experiments', 'Blog', 'Contact'];
+import { useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Menu, X } from 'lucide-react';
+import { NAV_ITEMS, SITE, SOCIALS } from '@/data/portfolio';
 
 export function Nav() {
+	const [isOpen, setIsOpen] = useState(false);
+
 	return (
-		<nav className='fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b-[3px] border-[var(--neo-border)]'>
-			<div className='max-w-7xl mx-auto px-6 h-[68px] flex items-center justify-between'>
-				<span className='text-2xl font-[700] tracking-tight select-none'>ttlam.</span>
+		<>
+			<nav className='fixed top-0 left-0 w-full z-50 mix-blend-difference text-white px-6 py-6 flex justify-between items-start pointer-events-none'>
+				<a href='/' className='flex items-center gap-3 pointer-events-auto'>
+					{/* eslint-disable-next-line @next/next/no-img-element */}
+					<img src='/logo-mark.png' alt='TL monogram' className='h-11 w-11' />
+					<span className='flex flex-col'>
+						<span className='font-bold text-lg tracking-tighter uppercase'>{SITE.brand}</span>
+						<span className='text-xs tracking-widest opacity-60 mt-1'>{SITE.established}</span>
+					</span>
+				</a>
 
-				<div className='hidden md:flex items-center gap-8'>
-					{NAV_LINKS.map((item) => (
-						<a
-							key={item}
-							href={item === 'Blog' ? 'https://blog.ttlam.dev' : `#${item.toLowerCase()}`}
-						target={item === 'Blog' ? '_blank' : undefined}
-						rel={item === 'Blog' ? 'noopener noreferrer' : undefined}
-							className='text-sm font-[500] transition-opacity duration-200 hover:opacity-50'
-						>
-							{item}
-						</a>
-					))}
-				</div>
+				<button onClick={() => setIsOpen(true)} className='pointer-events-auto group flex items-center gap-2'>
+					<span className='text-xs uppercase tracking-widest hidden md:block group-hover:tracking-[0.2em] transition-all duration-300'>
+						Menu
+					</span>
+					<Menu size={24} strokeWidth={1.5} />
+				</button>
+			</nav>
 
-				<div className='flex items-center gap-3'>
-					<a
-						href='#contact'
-						className='px-5 py-2.5 text-sm font-[700] border-[3px] border-[var(--neo-border)] rounded-full shadow-[4px_4px_0_var(--neo-border)] transition-all duration-[250ms] hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0 active:translate-y-0'
-						style={{ backgroundColor: C.coral }}
+			<AnimatePresence>
+				{isOpen && (
+					<motion.div
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						exit={{ opacity: 0 }}
+						transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+						className='fixed inset-0 bg-zinc-950 z-[60] text-white flex flex-col'
 					>
-						Let&apos;s Build →
-					</a>
-				</div>
-			</div>
-		</nav>
+						<div className='flex justify-between items-start px-6 py-6'>
+							<div className='flex items-center gap-3'>
+								{/* eslint-disable-next-line @next/next/no-img-element */}
+								<img src='/logo-mark.png' alt='TL monogram' className='h-11 w-11' />
+								<span className='font-bold text-lg tracking-tighter uppercase'>{SITE.brand}</span>
+							</div>
+							<button
+								onClick={() => setIsOpen(false)}
+								className='group flex items-center gap-2 hover:text-zinc-400 transition-colors'
+							>
+								<span className='text-xs uppercase tracking-widest hidden md:block'>Close</span>
+								<X size={24} strokeWidth={1.5} />
+							</button>
+						</div>
+
+						<div className='flex-1 flex flex-col justify-center px-6 md:px-24 lg:px-40'>
+							<div className='grid grid-cols-1 md:grid-cols-2 gap-12 w-full max-w-6xl mx-auto'>
+								<ul className='flex flex-col gap-4'>
+									{NAV_ITEMS.map((item, i) => (
+										<motion.li
+											key={item.label}
+											initial={{ opacity: 0, y: 20 }}
+											animate={{ opacity: 1, y: 0 }}
+											transition={{ delay: 0.1 + i * 0.1, duration: 0.5 }}
+										>
+											<a
+												href={item.href}
+												onClick={() => setIsOpen(false)}
+												className='text-5xl md:text-7xl font-light tracking-tighter hover:ml-4 transition-all duration-300 block group'
+											>
+												{item.label}
+												<span className='text-lg ml-2 opacity-0 group-hover:opacity-100 align-top text-zinc-500 transition-opacity'>
+													0{i + 1}
+												</span>
+											</a>
+										</motion.li>
+									))}
+								</ul>
+
+								<div className='hidden md:flex flex-col justify-end pb-4 text-zinc-500'>
+									<p className='text-sm max-w-xs leading-relaxed'>{SITE.blurb}</p>
+									<div className='mt-8 grid grid-cols-2 gap-8 text-xs uppercase tracking-widest'>
+										<div>
+											<p className='text-white mb-2'>{SITE.location.city}</p>
+											{SITE.location.lines.map(line => (
+												<p key={line}>{line}</p>
+											))}
+										</div>
+										<div>
+											<p className='text-white mb-2'>Socials</p>
+											{SOCIALS.map(social => (
+												<a
+													key={social.name}
+													href={social.url}
+													target='_blank'
+													rel='noopener noreferrer'
+													className='block hover:text-white transition-colors'
+												>
+													{social.name}
+												</a>
+											))}
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</motion.div>
+				)}
+			</AnimatePresence>
+		</>
 	);
 }

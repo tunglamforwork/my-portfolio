@@ -1,76 +1,41 @@
-'use client';
-
-import { C, NEO_CARD_SM } from './constants';
-import { FadeIn, Label } from './fade-in';
-
-const JOBS = [
-	{
-		role: 'Software Engineer',
-		company: 'Netcompany Vietnam',
-		period: 'May 2026 — Present',
-		desc: 'Building enterprise-grade software and contributing to scalable product delivery across modern engineering environments.',
-		color: C.blue,
-	},
-	{
-		role: 'Full-Stack Developer',
-		company: 'Link Brokerages',
-		period: 'Nov 2024 — Apr 2026',
-		desc: 'Developed internal platforms and AI-powered experiences.',
-		color: C.coral,
-	},
-	{
-		role: 'Software Engineering Intern',
-		company: 'TecAlliance Vietnam',
-		period: 'Jun 2024 — Aug 2024',
-		desc: 'Automation, graph pipelines, and AI engineering for automotive data systems.',
-		color: C.mint,
-	},
-] as const;
+import Link from 'next/link';
+import { ArrowUpRight } from 'lucide-react';
+import { EXPERIENCES } from '@/data/portfolio';
 
 export function Experience() {
 	return (
-		<section id='experience' className='py-24 px-6'>
-			<div className='max-w-7xl mx-auto'>
-				<FadeIn>
-					<Label>Experience</Label>
-					<h2 className='text-4xl md:text-5xl font-[700] mb-12 leading-tight'>
-						Where I&apos;ve Worked
-					</h2>
-				</FadeIn>
+		<section id='experience' className='py-32 bg-white text-zinc-900'>
+			<div className='container mx-auto px-6'>
+				<div className='flex justify-between items-end mb-16'>
+					<h2 className='text-4xl md:text-6xl font-light tracking-tighter uppercase'>Experience</h2>
+					<span className='text-xs tracking-widest hidden md:block'>2024 — Present</span>
+				</div>
 
-				<div className='space-y-4'>
-					{JOBS.map((job, i) => (
-						<FadeIn key={job.company} delay={i * 0.09}>
-							<div className={`${NEO_CARD_SM} p-6 bg-background flex gap-5 items-stretch`}>
-								<div
-									className='w-1.5 flex-shrink-0 rounded-full self-stretch'
-									style={{ backgroundColor: job.color }}
-								/>
-								<div className='flex-1 min-w-0'>
-									<div className='flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2'>
-										<div>
-											<h3 className='text-[19px] font-[700] leading-tight'>{job.role}</h3>
-											<span className='font-[700] text-[15px]' style={{ color: job.color }}>
-												{job.company}
-											</span>
-										</div>
-										<span
-											className='text-[12px] font-[700] px-3 py-1.5 border-[2px] border-[var(--neo-border)] rounded-full whitespace-nowrap self-start'
-											style={{ backgroundColor: job.color + '22' }}
-										>
-											{job.period}
-										</span>
-									</div>
-									<p
-										className='font-[500] text-[15px] leading-relaxed'
-										style={{ color: C.muted }}
-									>
-										{job.desc}
-									</p>
-								</div>
+				<div className='flex flex-col'>
+					{EXPERIENCES.map(job => (
+						<Link
+							key={job.slug}
+							href={`/experience/${job.slug}`}
+							className='group py-10 border-t border-zinc-200 grid grid-cols-1 md:grid-cols-12 gap-6 md:items-center hover:bg-zinc-50 transition-colors'
+						>
+							<div className='md:col-span-2 text-xs tracking-widest text-zinc-500 uppercase'>
+								{job.start} — {job.end}
 							</div>
-						</FadeIn>
+							<div className='md:col-span-4'>
+								<h3 className='text-2xl md:text-3xl font-light tracking-tight group-hover:pl-4 transition-all duration-300'>
+									{job.company}
+								</h3>
+								<p className='text-sm text-zinc-500 mt-1'>
+									{job.role} · {job.location}
+								</p>
+							</div>
+							<div className='md:col-span-5 text-sm leading-relaxed text-zinc-600'>{job.summary}</div>
+							<div className='md:col-span-1 flex md:justify-end'>
+								<ArrowUpRight size={20} className='opacity-0 group-hover:opacity-100 transition-opacity' />
+							</div>
+						</Link>
 					))}
+					<div className='w-full border-b border-zinc-200'></div>
 				</div>
 			</div>
 		</section>

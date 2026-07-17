@@ -86,6 +86,18 @@ export const DATA = {
 
 	work: [
 		{
+			company: 'Netcompany',
+			href: 'https://www.netcompany.com',
+			badges: ['Full-time'],
+			location: 'Ho Chi Minh City, Vietnam',
+			title: 'Consultant',
+			logoUrl: 'https://logo.clearbit.com/netcompany.com',
+			start: 'May 2026',
+			end: 'Present',
+			description:
+				'Working on Horizon, a Life & Pension platform for FORCA — a multi-tenant system serving the LP and PKA pension providers, delivering pension services to members across Denmark.',
+		},
+		{
 			company: 'Link Brokerages',
 			href: 'https://www.linkbrokerages.com',
 			badges: ['Remote', 'Full-time'],
@@ -94,7 +106,7 @@ export const DATA = {
 			logoUrl:
 				'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ_cu37si5Q9RgF8WjcWfN2ZlZNs-c1xmth_w&s',
 			start: 'Nov 2024',
-			end: 'Present',
+			end: 'May 2026',
 			description:
 				'Building LinkAI, an AI assistant for property decisions. Delivers real-time market insights, property valuations, and trend analysis.',
 		},
@@ -111,25 +123,12 @@ export const DATA = {
 			description:
 				'Developed a tool for designers to create wiring diagrams efficiently. Leveraged AI to optimize layout and spacing between circuit elements.',
 		},
-		{
-			company: 'Medlaw Vietnam',
-			href: 'https://www.medlaw.vn/',
-			badges: ['Freelance'],
-			location: 'Ho Chi Minh City, Vietnam',
-			title: 'Team Lead',
-			logoUrl:
-				'https://medlaw.vn/wp-content/uploads/2021/01/image_2021_01_10T10_18_53_678Z.png',
-			start: 'Jan 2022',
-			end: 'April 2022',
-			description:
-				'Developed a tool for designers to create wiring diagrams efficiently. Leveraged AI to optimize layout and spacing between circuit elements.',
-		},
 	],
 	education: [
 		{
 			school: 'VNUHCM - University of Science',
 			href: 'https://www.hcmus.edu.vn/',
-			degree: "Bachelor's degree, Computer Software Engineering",
+			degree: "Bachelor's degree, Computer Software Engineering — GPA 3.8/4.0",
 			logoUrl:
 				'https://cdn.haitrieu.com/wp-content/uploads/2021/12/logo-hcmus-new.png',
 			start: 'Sep 2021',
@@ -138,12 +137,57 @@ export const DATA = {
 	],
 	projects: [
 		{
-			title: 'Udeffy',
-			href: 'https://udeffy.com',
-			dates: 'Jan 2025 – Present',
+			title: 'Ampit',
+			href: 'https://ampit.com',
+			dates: '2026 – Present',
 			active: true,
 			description:
-				'Udeffy is an AI-powered learning platform that creates personalized learning journeys, combining intelligent content, interactive lessons, and real-time progress tracking to help learners achieve their goals faster and stay engaged.',
+				'Git blame for engineering decisions. A decision provenance layer for Claude Code and engineering teams: captures decisions from coding sessions, commits, PRs, and tickets into a searchable decision graph, and injects prior decisions back into Claude context.',
+			technologies: [
+				'Bun',
+				'TypeScript',
+				'Hono',
+				'tRPC',
+				'PostgreSQL',
+				'Drizzle ORM',
+				'pgvector',
+				'Docker',
+			],
+			links: [
+				{
+					type: 'Website',
+					href: 'https://ampit.com',
+					icon: <Icons.globe className='size-3' />,
+				},
+			],
+			image: '',
+			video: '',
+		},
+		{
+			title: 'GiaiMaLaSo',
+			href: 'https://giaimalaso.ai.vn',
+			dates: '2026 – Present',
+			active: true,
+			description:
+				'An AI platform for Vietnamese metaphysics — generates and interprets Tử Vi destiny charts, numerology readings, and AI tarot draws. Automated lunar-calendar chart engine, LLM interpretation with expert prompts, and local payments (Momo, VNPAY, QR).',
+			technologies: ['Next.js', 'TypeScript', 'LLM', 'Mobile-first UI'],
+			links: [
+				{
+					type: 'Website',
+					href: 'https://giaimalaso.ai.vn',
+					icon: <Icons.globe className='size-3' />,
+				},
+			],
+			image: '',
+			video: '',
+		},
+		{
+			title: 'Udeffy',
+			href: '',
+			dates: 'Jan 2025 – 2025',
+			active: false,
+			description:
+				'My graduation thesis project: an AI-powered learning platform that creates personalized learning journeys, combining intelligent content, interactive lessons, and real-time progress tracking to help learners achieve their goals faster and stay engaged.',
 			technologies: [
 				'Next.js (FE)',
 				'TailwindCSS',
@@ -158,13 +202,7 @@ export const DATA = {
 				'ShadcnUI',
 				'Umami (Analytics)',
 			],
-			links: [
-				{
-					type: 'Website',
-					href: 'https://udeffy.com',
-					icon: <Icons.globe className='size-3' />,
-				},
-			],
+			links: [],
 			image: '',
 			video: '',
 		},
@@ -189,11 +227,11 @@ export const DATA = {
 		},
 		{
 			title: 'Mozze',
-			href: 'https://mozze.vercel.app',
-			dates: 'March 2024 - June - 2024',
+			href: 'https://github.com/tunglamforwork/mozze',
+			dates: 'March 2024 - June 2024',
 			active: false,
 			description:
-				'Build your personal profile page to showcase your personal projects',
+				'A platform for showcasing personal projects with insight into engagement: project profiles with descriptions, images, and links; an analytics dashboard with view metrics, interest tracking, and feedback & reviews; community features (follow, share, collaborate); and gamified leaderboards.',
 			technologies: [
 				'Typescript',
 				'TailwindCSS',
@@ -205,35 +243,9 @@ export const DATA = {
 			],
 			links: [
 				{
-					type: 'Website',
-					href: 'https://mozze.vercel.app',
-					icon: <Icons.globe className='size-3' />,
-				},
-			],
-			image: '',
-			video: '',
-		},
-		{
-			title: 'Thuoc Suc Khoe Online Newspaper',
-			href: 'https://thuocsuckhoe.vn',
-			dates: '',
-			active: false,
-			description:
-				'An online medical and legal news platform with a blog-style content engine.',
-			technologies: [
-				'MongoDB',
-				'ExpressJS',
-				'Reactjs',
-				'GraphQL',
-				'Google Analytics',
-				'CMS',
-				'Ads Management',
-			],
-			links: [
-				{
-					type: 'Website',
-					href: 'https://thuocsuckhoe.vn',
-					icon: <Icons.globe className='size-3' />,
+					type: 'Source',
+					href: 'https://github.com/tunglamforwork/mozze',
+					icon: <Icons.github className='size-3' />,
 				},
 			],
 			image: '',

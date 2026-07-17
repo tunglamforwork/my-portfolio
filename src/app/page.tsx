@@ -1,26 +1,38 @@
 import { About } from '@/components/portfolio/about';
-import { Contact } from '@/components/portfolio/contact';
-import { Experiments } from '@/components/portfolio/experiments';
+import { CustomCursor } from '@/components/portfolio/custom-cursor';
 import { Experience } from '@/components/portfolio/experience';
-import { FeaturedWork } from '@/components/portfolio/featured-work';
 import { Footer } from '@/components/portfolio/footer';
 import { Hero } from '@/components/portfolio/hero';
+import { Journal, type JournalPost } from '@/components/portfolio/journal';
 import { Nav } from '@/components/portfolio/nav';
-import { Services } from '@/components/portfolio/services';
-import { Skills } from '@/components/portfolio/skills';
+import { Projects } from '@/components/portfolio/projects';
+import { getBlogPosts } from '@/data/blog';
 
-export default function Page() {
+export default async function Page() {
+	const posts = await getBlogPosts();
+	const latestPosts: JournalPost[] = posts
+		.sort(
+			(a, b) =>
+				new Date(b.metadata.publishedAt).getTime() - new Date(a.metadata.publishedAt).getTime()
+		)
+		.slice(0, 3)
+		.map(post => ({
+			slug: post.slug,
+			title: post.metadata.title,
+			publishedAt: post.metadata.publishedAt,
+		}));
+
 	return (
-		<div className='font-[family-name:var(--font-onest)]'>
+		<div className='font-[family-name:var(--font-onest)] bg-white text-black min-h-screen w-full selection:bg-zinc-200 selection:text-black'>
+			<CustomCursor />
 			<Nav />
-			<Hero />
-			<Services />
-			<About />
-			<FeaturedWork />
-			<Experience />
-			<Skills />
-			<Experiments />
-			<Contact />
+			<main>
+				<Hero />
+				<About />
+				<Experience />
+				<Projects />
+				<Journal posts={latestPosts} />
+			</main>
 			<Footer />
 		</div>
 	);
