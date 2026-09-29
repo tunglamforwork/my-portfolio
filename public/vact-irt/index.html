@@ -1,0 +1,740 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mô phỏng chấm điểm V-ACT: thí sinh Lâm, 120 câu, 4 phần</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  /* ttlam.dev palette: zinc monochrome, Onest, square corners */
+  --bg:#F4F4F5; --panel:#FFFFFF; --ink:#18181B; --mute:#71717A; --line:#E4E4E7; --accent:#18181B;
+  --easy:#047857; --med:#B45309; --hard:#BE123C; --on-fill:#FFFFFF; --soft:#F4F4F5;
+  --display:'Onest',ui-sans-serif,system-ui,sans-serif;
+  --body:'Onest',ui-sans-serif,system-ui,-apple-system,sans-serif;
+  color-scheme:light;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);background:var(--bg)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;-webkit-text-size-adjust:100%}
+.wrap{max-width:760px;margin:0 auto;padding:18px 14px 40px}
+h1,h2{font-family:var(--display);font-weight:500;letter-spacing:-.03em;margin:0}
+h1{font-size:clamp(26px,6vw,40px);line-height:1.08;margin-bottom:10px}
+h2{font-size:20px;line-height:1.2;margin-bottom:4px}
+p{margin:0 0 10px}
+.sub{color:var(--mute);font-size:13.5px;margin-bottom:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:0;padding:20px;margin-top:14px}
+.hero{padding:18px 16px 16px}
+.big{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.big .n{font-family:var(--display);font-weight:500;font-size:clamp(64px,19vw,104px);line-height:.95;letter-spacing:-.06em;color:var(--accent);font-variant-numeric:tabular-nums}
+.big .of{font-family:var(--display);font-weight:300;font-size:24px;color:var(--mute)}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:14px}
+.stat{border-top:1px solid var(--line);padding:10px 0 0}
+.stat b{display:block;font-family:var(--display);font-weight:500;letter-spacing:-.02em;font-size:22px;line-height:1.2;font-variant-numeric:tabular-nums}
+.stat span{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--mute)}
+.controls{display:grid;gap:12px}
+label,.lab{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px}
+select,input[type=number]{width:100%;font:inherit;font-size:15px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:0;padding:9px 10px}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.chk{display:flex;gap:9px;align-items:center;font-weight:500;font-size:14px;text-transform:none;letter-spacing:0}
+.chk input{width:18px;height:18px;accent-color:var(--accent)}
+button.act{font:inherit;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.12em;color:var(--on-fill);background:var(--accent);border:1px solid var(--accent);border-radius:0;padding:11px 20px;cursor:pointer;transition:background .3s,color .3s}
+button.act:hover{background:transparent;color:var(--accent)}
+.seedline{display:flex;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap}
+.seedline small{color:var(--mute)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.chip{font:inherit;font-size:12px;font-weight:500;letter-spacing:.04em;color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:0;padding:6px 12px;cursor:pointer;transition:border-color .2s}
+.chip:hover{border-color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--accent);color:var(--on-fill);border-color:var(--accent)}
+.prog{height:4px;background:var(--line);border-radius:0;overflow:hidden;margin-top:8px}
+.prog i{display:block;height:100%;background:var(--accent)}
+.pstat small{display:block;color:var(--mute);margin-top:4px;font-size:12.5px}
+.secrow{margin-bottom:14px}
+.sechd{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:5px}
+.sechd span{font-size:13.5px;color:var(--mute);font-variant-numeric:tabular-nums}
+.sechd span b{color:var(--ink)}
+.track{position:relative;height:10px;background:var(--line);border-radius:0}
+.track .fill{position:absolute;left:0;top:0;bottom:0;background:var(--accent);border-radius:0}
+.track .tick{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink);box-shadow:0 0 0 2px var(--panel)}
+.secft{font-size:12.5px;color:var(--mute);margin-top:5px}
+.sheet{display:grid;grid-template-columns:auto repeat(10,1fr);gap:5px;align-items:center}
+.sechead{grid-column:1/-1;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.1em;margin-top:12px}
+.sechead:first-child{margin-top:0}
+.rowlab{font-size:10.5px;color:var(--mute);text-align:right;padding-right:3px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.lv0{--c:var(--easy)} .lv1{--c:var(--med)} .lv2{--c:var(--hard)}
+.bub{aspect-ratio:1;width:100%;min-width:0;border-radius:50%;border:2px solid var(--c);background:transparent;color:var(--c);font:600 10.5px var(--body);padding:0;display:grid;place-items:center;cursor:pointer}
+.bub.ok{background:var(--c);color:var(--on-fill)}
+.bub[aria-pressed="true"]{outline:2px solid var(--ink);outline-offset:2px}
+.detail{margin-top:12px;background:var(--soft);border-left:2px solid var(--ink);border-radius:0;padding:10px 12px;font-size:14px;min-height:64px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;color:var(--mute);margin:10px 0 0}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:50%;background:var(--c);vertical-align:-1px;margin-right:5px}
+.legend i.hol{background:transparent;border:2px solid var(--c)}
+.legend i.bar{border-radius:0;width:2px;height:12px;background:var(--ink);vertical-align:-2px}
+.chart{width:100%;overflow:hidden}
+svg{display:block}
+.tx{fill:var(--mute);font-size:10.5px;font-family:var(--body)}
+.txi{fill:var(--ink);font-size:11.5px;font-weight:600;font-family:var(--body)}
+.gl{stroke:var(--line);stroke-width:1}
+.f{fill:var(--c)} .s{stroke:var(--c);fill:none;stroke-width:1.8}
+.tblw{overflow-x:auto;margin-top:8px}
+table{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums}
+th,td{text-align:right;padding:7px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{font-weight:500;color:var(--mute);font-size:11px;text-transform:uppercase;letter-spacing:.08em}
+code,.formula{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px}
+.formula{background:var(--soft);border-radius:0;padding:10px 12px;overflow-x:auto;white-space:nowrap;margin:8px 0}
+ul.tight{margin:6px 0 0;padding-left:18px}
+ul.tight li{margin-bottom:5px}
+.note{font-size:13px;color:var(--mute)}
+@media (min-width:640px){.stats{grid-template-columns:repeat(4,1fr)}.controls{grid-template-columns:1fr 1fr}.controls .full{grid-column:1/-1}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Lâm làm đúng <span id="tR">84</span>/120 câu: điểm V-ACT mô phỏng là bao nhiêu?</h1>
+<p class="sub">Mô phỏng theo cấu trúc V-ACT (ĐGNL ĐHQG-HCM): 120 câu chia thành 4 phần, mỗi phần 30 câu và tối đa 300 điểm, chấm theo lý thuyết ứng đáp câu hỏi (IRT). <span class="nS">1.000</span> thí sinh làm cùng một đề, Lâm là một trong số đó. Tham số câu hỏi và cách quy đổi điểm là giả định của mô phỏng, không phải số liệu thật của kỳ thi.</p>
+
+<section class="card hero" aria-live="polite">
+  <div class="big"><span class="n" id="score">…</span><span class="of">/ 1200</span></div>
+  <p id="heroLine" style="margin-top:8px"></p>
+  <div class="stats">
+    <div class="stat"><b id="sRaw"></b><span>điểm nếu đếm thẳng</span></div>
+    <div class="stat"><b id="sPct"></b><span id="sRank"></span></div>
+    <div class="stat"><b id="sSE"></b><span>sai số chuẩn (điểm)</span></div>
+    <div class="stat"><b id="sMean"></b><span>điểm trung bình cả nhóm</span></div>
+  </div>
+</section>
+
+<section class="card">
+  <h2>Điểm của Lâm theo từng phần</h2>
+  <p class="sub">Mỗi phần có 30 câu và được chấm riêng trên thang 300, rồi cộng lại thành điểm tổng.</p>
+  <div id="secCards"></div>
+  <div class="legend"><span><i class="bar"></i>vạch đứng = trung bình cả nhóm</span></div>
+</section>
+
+<section class="card">
+  <h2>Thay đổi kịch bản</h2>
+  <p class="sub">Mọi thứ bên dưới cập nhật ngay khi bạn thay đổi.</p>
+  <div class="controls">
+    <div class="full pstat">
+      <label for="nstu">Số thí sinh tham gia: <span class="nS">1.000</span></label>
+      <input type="number" id="nstu" value="1000" min="100" max="150000" step="100" inputmode="numeric">
+      <div class="chips" id="chips">
+        <button type="button" class="chip" data-n="1000" aria-pressed="true">1.000</button>
+        <button type="button" class="chip" data-n="10000" aria-pressed="false">10.000</button>
+        <button type="button" class="chip" data-n="50000" aria-pressed="false">50.000</button>
+        <button type="button" class="chip" data-n="120000" aria-pressed="false">120.000</button>
+      </div>
+      <div id="popStatus" aria-live="polite"></div>
+    </div>
+    <div class="full">
+      <label for="raw">Số câu đúng của Lâm: <span id="rawOut">84</span> / 120</label>
+      <input type="range" id="raw" min="1" max="119" value="84">
+    </div>
+    <div>
+      <label for="prof">Thế mạnh theo phần của Lâm</label>
+      <select id="prof">
+        <option value="bal">Cân bằng giữa các phần</option>
+        <option value="stem">Mạnh Toán và Tư duy khoa học, yếu ngôn ngữ</option>
+        <option value="lang">Mạnh ngôn ngữ, yếu Toán và Tư duy khoa học</option>
+      </select>
+    </div>
+    <div>
+      <label for="style">Lâm làm đúng những câu nào</label>
+      <select id="style">
+        <option value="1">Điển hình: đúng phần lớn câu dễ</option>
+        <option value="3">Rất nhất quán: chỉ sai các câu khó nhất</option>
+        <option value="0">Ngẫu nhiên: không liên quan độ khó</option>
+        <option value="-1">Cẩu thả: sai câu dễ, may mắn câu khó</option>
+      </select>
+    </div>
+    <div>
+      <label for="order">Thứ tự câu trong mỗi phần</label>
+      <select id="order">
+        <option value="mixed">Trộn lẫn</option>
+        <option value="sorted">Từ dễ đến khó</option>
+      </select>
+    </div>
+    <div class="full">
+      <label for="mode">Cách quy đổi điểm</label>
+      <select id="mode">
+        <option value="wt">Trọng số theo độ khó (câu khó nhiều điểm hơn)</option>
+        <option value="tcc">Theo số câu đúng kỳ vọng (IRT, mỗi câu trung bình 10 điểm)</option>
+        <option value="lin">Tuyến tính theo θ (chuẩn hóa theo cả nhóm)</option>
+      </select>
+    </div>
+    <div class="full">
+      <label for="ratio">Câu khó đáng giá gấp <span id="ratioOut">1,4</span> lần câu dễ</label>
+      <input type="range" id="ratio" min="1" max="4" step="0.1" value="1.4">
+    </div>
+    <div class="row2 full">
+      <div><label for="center">Điểm trung tâm (tổng, chỉ cách tuyến tính)</label><input type="number" id="center" disabled value="600" min="200" max="900" step="10" inputmode="numeric"></div>
+      <div><label for="per">Số điểm mỗi 1 θ (tổng, chỉ cách tuyến tính)</label><input type="number" id="per" disabled value="150" min="50" max="300" step="10" inputmode="numeric"></div>
+    </div>
+    <div>
+      <span class="lab">Đoán mò</span>
+      <label class="chk" for="guess"><input type="checkbox" id="guess" checked> Cho phép đoán trúng may mắn (c = 0,20)</label>
+    </div>
+    <div class="full seedline">
+      <button class="act" id="reseed" type="button">Chạy mô phỏng mới</button>
+      <small>Seed: <span id="seedOut"></span></small>
+    </div>
+  </div>
+</section>
+
+<section class="card">
+  <h2>Phiếu trả lời của Lâm</h2>
+  <p class="sub">Mỗi ô tròn là một câu, theo thứ tự Lâm làm bài. Mỗi hàng 10 câu. Chạm vào ô tròn để xem chi tiết.</p>
+  <div class="sheet" id="sheet"></div>
+  <div class="legend">
+    <span class="lv0"><i></i>Dễ</span><span class="lv1"><i></i>Trung bình</span><span class="lv2"><i></i>Khó</span>
+    <span class="lv1"><i></i>tô đặc = đúng</span><span class="lv1"><i class="hol"></i>rỗng = sai</span>
+  </div>
+  <div class="detail" id="detail">Chạm vào một ô để xem bao nhiêu thí sinh làm đúng câu đó và câu đó đáng giá bao nhiêu điểm.</div>
+</section>
+
+<section class="card">
+  <h2>Mỗi câu hỏi đáng giá bao nhiêu điểm</h2>
+  <p class="sub" id="worthSub">Cột hướng lên: số điểm một câu trả lời đúng cộng vào điểm tổng của Lâm. Cột hướng xuống: số điểm Lâm mất do làm sai. Trọng số của một câu phụ thuộc vào việc câu đó phân biệt thí sinh giỏi và yếu tốt đến đâu (a). Khi bật đoán mò, nó còn phụ thuộc vào khả năng đoán trúng may mắn, nên câu đúng ở mức dễ và trung bình có giá trị hơn câu đúng ở mức khó.</p>
+  <div class="chart" id="cWorth"></div>
+  <p class="note" style="margin-top:6px">Câu 1–30 Tiếng Việt · 31–60 Tiếng Anh · 61–90 Toán học · 91–120 Tư duy khoa học</p>
+  <div class="tblw"><table id="lvTable"></table></div>
+</section>
+
+<section class="card">
+  <h2>Điểm của Lâm tích lũy trong bài thi</h2>
+  <p class="sub" id="runSub">Điểm tổng được ước lượng lại sau mỗi câu. Vùng tô mờ là ±1 sai số chuẩn và thu hẹp dần khi có thêm câu trả lời. Phần chưa làm được tính ở mức của một thí sinh trung bình cho đến khi có câu trả lời.</p>
+  <div class="chart" id="cRun"></div>
+  <p class="sub" style="margin:14px 0 6px"><b style="color:var(--ink)">Số câu đúng trong mỗi khối 10 câu</b> so với kỳ vọng của mô hình ở năng lực cuối cùng của Lâm (chấm tròn). Cột cao hơn chấm tròn nghĩa là đoạn đó làm tốt hơn kỳ vọng.</p>
+  <div class="chart" id="cBlocks"></div>
+</section>
+
+<section class="card">
+  <h2>Cùng số câu đúng, khác điểm</h2>
+  <p class="sub">Mỗi chấm là một thí sinh. Đường nét đứt là điểm đếm thẳng (số câu đúng × 10). Cột tô mờ là những người có cùng số câu đúng với Lâm.</p>
+  <div class="chart" id="cScatter"></div>
+  <p class="note" id="scNote" style="margin-top:6px"></p>
+  <p id="peerText" style="margin-top:10px"></p>
+</section>
+
+<section class="card">
+  <h2>Lâm đứng ở đâu trong <span class="nS">1.000</span> người</h2>
+  <div class="chart" id="cHist"></div>
+</section>
+
+<section class="card">
+  <h2>Bao nhiêu thí sinh làm đúng từng câu</h2>
+  <p class="sub">Mỗi câu theo độ khó (b) và tỷ lệ trong <span class="nS">1.000</span> thí sinh trả lời đúng. Tô đặc = Lâm đúng, rỗng = Lâm sai.</p>
+  <div class="chart" id="cItems"></div>
+</section>
+
+<section class="card">
+  <h2>Cách tính điểm</h2>
+  <p>Mỗi câu hỏi có ba tham số. Xác suất một thí sinh có năng lực θ trả lời đúng là:</p>
+  <div class="formula">P(θ) = c + (1 − c) / (1 + e^(−a(θ − b)))</div>
+  <ul class="tight">
+    <li><b>b</b> là độ khó: mức năng lực mà thí sinh có 50% cơ hội làm đúng (tính trên mức sàn đoán mò).</li>
+    <li><b>a</b> là độ phân biệt: câu hỏi tách thí sinh giỏi và yếu sắc nét đến đâu.</li>
+    <li><b>c</b> là mức sàn đoán mò, bằng 0,20 với bốn phương án.</li>
+  </ul>
+  <p style="margin-top:10px">Mô phỏng ước lượng một θ riêng cho từng phần 30 câu, bằng trung bình hậu nghiệm với phân phối chuẩn tắc làm tiên nghiệm (EAP). Có ba cách chấm điểm, chọn ở ô "Cách quy đổi điểm".</p>
+  <ul class="tight">
+    <li><b>Trọng số theo độ khó (mặc định).</b> Mỗi câu có số điểm cố định tỷ lệ với độ phân biệt (a) và tăng theo độ khó (b); mỗi phần chia đều để cộng đủ 300. Câu khó đúng thì được nhiều điểm hơn, sai câu dễ mất ít điểm hơn khi sai câu khó. Thanh trượt quyết định câu khó đáng giá gấp mấy lần câu dễ. Đây là giả định của mô phỏng để bám theo cách nói "mỗi câu có trọng số khác nhau tùy độ khó"; cách này không giảm điểm cho việc trúng câu khó do đoán mò như IRT thật.</li>
+    <li><b>Theo số câu đúng kỳ vọng.</b> Điểm phần = 10 × số câu mà một thí sinh có năng lực θ đó được kỳ vọng làm đúng trên phần này (đường cong điểm thật của đề). Thí sinh đúng 27/30 câu thường được khoảng 260 đến 280 điểm. Phần điểm trên 230 được kéo giãn nhẹ để đúng cả 30 câu cho đúng 300 điểm (và đúng cả 120 câu cho 1.200). Trả lời trúng các câu phân biệt tốt hoặc khó thì θ cao hơn, nên điểm cao hơn "số câu × 10".</li>
+    <li><b>Tuyến tính theo θ.</b> Điểm phần = <code>trung tâm/4 + (số điểm/4) × θ</code>, giới hạn 0–300. Cách này neo vào cả nhóm (trung bình 600), nên thí sinh giỏi bị kéo thấp hơn số câu × 10 khá nhiều.</li>
+  </ul>
+  <p style="margin-top:10px">Điểm tổng là tổng bốn phần, tối đa 1.200. Khi bật đoán mò, điểm tối thiểu cũng không xuống 0 vì đoán bừa vẫn trúng một số câu.</p>
+  <p>Năng lực ở các phần được giả định có tương quan với nhau (một thí sinh giỏi Toán thường khá ở các phần khác). Phần Tiếng Anh được giả định dễ hơn một chút vì đề ở mức A2–B1.</p>
+  <p>Độ khó và "bao nhiêu người làm đúng" phát huy tác dụng ở khâu hiệu chỉnh: chúng quyết định b của từng câu, và b quyết định ý nghĩa của một số câu đúng nhất định. Cùng 84 câu đúng sẽ cho θ cao hơn trong một đề khó hơn.</p>
+  <p class="note">Chi tiết cách quy đổi điểm thật của kỳ thi không có trong các nguồn mình tìm được, nên đây là mô hình minh họa. "Giá trị" của một câu được đo bằng cách đảo đúng/sai của riêng câu đó rồi chấm lại phần chứa câu đó. Toàn bộ dữ liệu là mô phỏng.</p>
+</section>
+
+</div>
+
+<script>
+(function(){
+'use strict';
+var G=41, TH=[], PRIOR=[], PRIOR2=[], SD2=2;
+for(var g=0;g<G;g++){var t=-4+g*(8/(G-1));TH.push(t);PRIOR.push(Math.exp(-t*t/2));PRIOR2.push(Math.exp(-t*t/(2*SD2*SD2)));}
+var LV=[{n:'Dễ'},{n:'Trung bình'},{n:'Khó'}];
+var SEC=[{n:'Tiếng Việt',off:0},{n:'Tiếng Anh',off:-0.3},{n:'Toán học',off:0},{n:'Tư duy khoa học',off:0}];
+var PROF={bal:[0,0,0,0],stem:[-0.6,-0.6,0.6,0.6],lang:[0.6,0.6,-0.6,-0.6]};
+var RHO=0.8, PER=30;
+var $=function(id){return document.getElementById(id);};
+var rng=function(seed){var a=seed>>>0;return function(){a=(a+0x6D2B79F5)|0;var t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;};};
+var gauss=function(r){var u=0;while(u===0)u=r();var v=r();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);};
+var pf=function(it,t){return it.c+(1-it.c)/(1+Math.exp(-it.a*(t-it.b)));};
+var fmt=function(n){return Math.round(n).toLocaleString('vi-VN');};
+var dec=function(n,k){return n.toFixed(k).replace('.',',');};
+
+function eap(ll,tc,pr){
+  pr=pr||PRIOR;
+  var m=-1e18,g;
+  for(g=0;g<G;g++)if(ll[g]>m)m=ll[g];
+  var s=0,s1=0,s2=0,e1=0,e2=0;
+  for(g=0;g<G;g++){
+    var w=Math.exp(ll[g]-m)*pr[g];s+=w;s1+=w*TH[g];s2+=w*TH[g]*TH[g];
+    if(tc){e1+=w*tc[g];e2+=w*tc[g]*tc[g];}
+  }
+  var mu=s1/s,out={t:mu,sd:Math.sqrt(Math.max(0,s2/s-mu*mu))};
+  if(tc){var em=e1/s;out.e=em;out.sde=Math.sqrt(Math.max(0,e2/s-em*em));}
+  return out;
+}
+
+var cache={key:'',m:null};
+function getModel(seed,guess){
+  var key=seed+'|'+guess;
+  if(cache.key===key)return cache.m;
+  var r=rng(seed),items=[],spec=[[-1.25,0.35],[0,0.35],[1.3,0.4]],j,li,k,i,g,p;
+  for(j=0;j<4;j++){
+    var part=[];
+    for(li=0;li<3;li++)for(k=0;k<10;k++){
+      var b=spec[li][0]+SEC[j].off+spec[li][1]*gauss(r);
+      var a=Math.min(2,Math.max(0.5,Math.exp(0.05+0.3*gauss(r))));
+      part.push({sec:j,li:li,a:a,b:b,c:guess?0.2:0});
+    }
+    for(i=part.length-1;i>0;i--){var q=Math.floor(r()*(i+1));var tmp=part[i];part[i]=part[q];part[q]=tmp;}
+    for(i=0;i<part.length;i++)items.push(part[i]);
+  }
+  var N=items.length,LP=[],LQ=[];
+  for(i=0;i<N;i++){
+    var lp=new Float64Array(G),lq=new Float64Array(G);
+    for(g=0;g<G;g++){p=pf(items[i],TH[g]);lp[g]=Math.log(p);lq[g]=Math.log(1-p);}
+    LP.push(lp);LQ.push(lq);
+  }
+  var tcc=[];
+  for(j=0;j<4;j++){
+    var tarr=new Float64Array(G);
+    for(k=0;k<PER;k++){var lpk=LP[j*PER+k];for(g=0;g<G;g++)tarr[g]+=Math.exp(lpk[g]);}
+    tcc.push(tarr);
+  }
+  var smax=[];
+  for(j=0;j<4;j++){
+    var pl=new Float64Array(G);
+    for(k=0;k<PER;k++){var lpp=LP[j*PER+k];for(g=0;g<G;g++)pl[g]+=lpp[g];}
+    smax.push(10*eap(pl,tcc[j],PRIOR2).e);
+  }
+  var m={key:key,seed:seed,items:items,N:N,LP:LP,LQ:LQ,tcc:tcc,smax:smax,pop:null};
+  cache={key:key,m:m};
+  return m;
+}
+
+/* population is simulated in chunks so the page stays responsive at 120,000 students */
+var CH=1500,popJob=null;
+function simChunk(m,pop,r,from,to,lls){
+  var items=m.items,LP=m.LP,LQ=m.LQ,tcc=m.tcc,sq=Math.sqrt(1-RHO*RHO),g,j,k,i;
+  for(var s=from;s<to;s++){
+    var g0=gauss(r),raw=0,c0=0,c1=0,c2=0;
+    for(j=0;j<4;j++){
+      var thj=RHO*g0+sq*gauss(r),ll=lls[j];
+      ll.fill(0);
+      for(k=0;k<PER;k++){
+        i=j*PER+k;
+        var it=items[i],u=r()<pf(it,thj)?1:0;pop.resp[s*m.N+i]=u;
+        if(u){raw++;pop.pc[i]++;if(it.li===0)c0++;else if(it.li===1)c1++;else c2++;}
+        var arr=u?LP[i]:LQ[i];
+        for(g=0;g<G;g++)ll[g]+=arr[g];
+      }
+      pop.psecT[s*4+j]=eap(ll).t;
+      pop.psecE[s*4+j]=eap(ll,tcc[j],PRIOR2).e;
+    }
+    pop.praw[s]=raw;pop.plv[s*3]=c0;pop.plv[s*3+1]=c1;pop.plv[s*3+2]=c2;
+  }
+}
+function status(done,total){
+  var el=$('popStatus');
+  if(!total){el.innerHTML='';return;}
+  el.innerHTML='<div class="prog"><i style="width:'+(done/total*100).toFixed(0)+'%"></i></div><small>Đang mô phỏng '+fmt(done)+' / '+fmt(total)+' thí sinh…</small>';
+}
+function ensurePop(m,S,cb){
+  if(m.pop&&m.pop.S===S){cb();return;}
+  var key=m.key+'|'+S;
+  if(popJob&&!popJob.done&&popJob.key===key){popJob.cb=cb;return;}
+  if(popJob)popJob.cancelled=true;
+  var O=S-1;
+  var pop={S:S,psecT:new Float32Array(O*4),psecE:new Float32Array(O*4),praw:new Int16Array(O),plv:new Uint8Array(O*3),pc:new Int32Array(m.N),resp:new Uint8Array(O*m.N),wkey:null,wsc:null};
+  var r=rng(m.seed*31+7),lls=[],q;
+  for(q=0;q<4;q++)lls.push(new Float64Array(G));
+  var job={key:key,cancelled:false,done:false,cb:cb,n:0};
+  popJob=job;
+  (function step(){
+    if(job.cancelled)return;
+    var end=Math.min(O,job.n+CH);
+    simChunk(m,pop,r,job.n,end,lls);
+    job.n=end;
+    if(end<O){status(end,O);setTimeout(step,0);}
+    else{job.done=true;m.pop=pop;status(0,0);job.cb();}
+  })();
+}
+
+function makeA(m,R,gamma,seed,off){
+  var items=m.items,N=m.N,lo=-6,hi=6,i;
+  for(var it=0;it<50;it++){
+    var mid=(lo+hi)/2,e=0;
+    for(i=0;i<N;i++)e+=pf(items[i],mid+off[items[i].sec]);
+    if(e<R)lo=mid;else hi=mid;
+  }
+  var thA=(lo+hi)/2,r=rng(seed*7919+R*31+Math.round(gamma*100)+13),keys=[];
+  for(i=0;i<N;i++){
+    var p=pf(items[i],thA+off[items[i].sec]),odds=p/(1-p),w=Math.pow(odds,gamma);
+    keys.push({i:i,k:Math.log(r()+1e-12)/w});
+  }
+  keys.sort(function(x,y){return y.k-x.k;});
+  var u=new Uint8Array(N);
+  for(i=0;i<R;i++)u[keys[i].i]=1;
+  return u;
+}
+
+var st={S:1000,seed:2026,R:84,gamma:1,prof:'bal',order:'mixed',guess:true,mode:'wt',ratio:1.4,center:600,k:150};
+var last=null,sel=null;
+
+function weights(m,ratio){
+  if(m.wk&&m.wk.ratio===ratio)return m.wk.w;
+  var lam=Math.log(ratio)/2.55,N=m.N,w=new Float64Array(N),j,k,i;
+  for(j=0;j<4;j++){
+    var s=0;
+    for(k=0;k<PER;k++){i=j*PER+k;w[i]=m.items[i].a*Math.exp(lam*m.items[i].b);s+=w[i];}
+    for(k=0;k<PER;k++){i=j*PER+k;w[i]*=300/s;}
+  }
+  m.wk={ratio:ratio,w:w};
+  return w;
+}
+
+function analyze(m,u){
+  var items=m.items,N=m.N,LP=m.LP,LQ=m.LQ,pop=m.pop,O=pop.S-1,S=O+1,i,g,j,p;
+  var k4=st.k/4,c4=st.center/4;
+  var ssc=function(t){return Math.max(0,Math.min(300,c4+k4*t));};
+  var TC=st.mode==='tcc',WT=st.mode==='wt',wv=WT?weights(m,st.ratio):null;
+  var PR=TC?PRIOR2:PRIOR;
+  var S0=230;
+  var fx=function(j,s){var sm=m.smax[j];if(s<=S0||sm<=S0+1)return Math.min(300,s);return Math.min(300,S0+(s-S0)*(300-S0)/(sm-S0));};
+  var sl=function(j,s){var sm=m.smax[j];return (s<=S0||sm<=S0+1)?1:(300-S0)/(sm-S0);};
+  var val=function(e,j){return TC?fx(j,10*e.e):ssc(e.t);};
+  var sdv=function(e,j){return TC?10*e.sde*sl(j,10*e.e):k4*e.sd;};
+  var secLL=[],secRaw=[0,0,0,0],cA=[0,0,0],raw=0;
+  for(j=0;j<4;j++)secLL.push(new Float64Array(G));
+  for(i=0;i<N;i++){
+    var a=u[i]?LP[i]:LQ[i],ll=secLL[items[i].sec];
+    for(g=0;g<G;g++)ll[g]+=a[g];
+    if(u[i]){raw++;cA[items[i].li]++;secRaw[items[i].sec]++;}
+  }
+  var est=secLL.map(function(l,jj){return eap(l,m.tcc[jj],PR);}),secScore=est.map(function(e,jj){return val(e,jj);});
+  if(WT){for(j=0;j<4;j++){secScore[j]=0;}for(i=0;i<N;i++)if(u[i])secScore[items[i].sec]+=wv[i];}
+  var score=secScore[0]+secScore[1]+secScore[2]+secScore[3];
+  var se;
+  if(WT){var v2=0;for(i=0;i<N;i++){var pp=pf(items[i],est[items[i].sec].t);v2+=wv[i]*wv[i]*pp*(1-pp);}se=Math.sqrt(v2);}
+  else se=Math.sqrt(est.reduce(function(acc,e,jj){return acc+Math.pow(sdv(e,jj),2);},0));
+  var worth=new Array(N),tmp=new Float64Array(G);
+  for(i=0;i<N;i++){
+    j=items[i].sec;
+    var cur=u[i]?LP[i]:LQ[i],alt=u[i]?LQ[i]:LP[i],lj=secLL[j];
+    for(g=0;g<G;g++)tmp[g]=lj[g]-cur[g]+alt[g];
+    worth[i]=Math.abs(secScore[j]-val(eap(tmp,m.tcc[j],PR),j));
+  }
+  if(WT)for(i=0;i<N;i++)worth[i]=wv[i];
+  var ord=[],k;
+  for(j=0;j<4;j++){
+    var idx=[];for(k=0;k<PER;k++)idx.push(j*PER+k);
+    if(st.order==='sorted')idx.sort(function(x,y){return items[x].b-items[y].b;});
+    for(k=0;k<PER;k++)ord.push(idx[k]);
+  }
+  var run=[],rl=[],rv=[],rs=[],zero=new Float64Array(G);
+  for(j=0;j<4;j++){rl.push(new Float64Array(G));var e0=eap(zero,m.tcc[j],PRIOR);rv.push(val(e0,j));rs.push(sdv(e0,j));}
+  for(p=0;p<N;p++){
+    i=ord[p];j=items[i].sec;
+    var arr=u[i]?LP[i]:LQ[i],rj=rl[j];
+    for(g=0;g<G;g++)rj[g]+=arr[g];
+    var e=eap(rj,m.tcc[j],PR);rv[j]=val(e,j);rs[j]=sdv(e,j);
+    var tot=0,v=0;
+    for(var q=0;q<4;q++){tot+=rv[q];v+=rs[q]*rs[q];}
+    var sd=Math.sqrt(v);
+    run.push({s:tot,lo:tot-sd,hi:tot+sd});
+  }
+  if(WT){run=[];var ce=0,cm=0;for(p=0;p<N;p++){i=ord[p];ce+=wv[i]*u[i];cm+=wv[i];run.push({s:ce,lo:ce,hi:ce,cap:cm});}}
+  var blocks=[];
+  for(var b=0;b<N/10;b++){
+    var act=0,exp=0;
+    for(p=b*10;p<b*10+10;p++){i=ord[p];act+=u[i];exp+=pf(items[i],est[items[i].sec].t);}
+    blocks.push({act:act,exp:exp});
+  }
+  if(WT&&pop.wkey!==st.ratio){
+    var wsc=new Float32Array(O*4);
+    for(i=0;i<O;i++){var base=i*N;for(j=0;j<4;j++){var s2=0;for(k=0;k<PER;k++){var ii=j*PER+k;s2+=wv[ii]*pop.resp[base+ii];}wsc[i*4+j]=s2;}}
+    pop.wsc=wsc;pop.wkey=st.ratio;
+  }
+  var popSc=new Float64Array(S),popRaw=new Int16Array(S),popSec=new Float64Array(S*4);
+  var below=0,above=0,sum=0,secSum=[0,0,0,0],secBelow=[0,0,0,0];
+  for(i=0;i<O;i++){
+    var tt=0;
+    for(j=0;j<4;j++){var sv=WT?pop.wsc[i*4+j]:(TC?fx(j,10*pop.psecE[i*4+j]):ssc(pop.psecT[i*4+j]));popSec[i*4+j]=sv;tt+=sv;secSum[j]+=sv;if(sv<secScore[j])secBelow[j]++;}
+    popSc[i]=tt;popRaw[i]=pop.praw[i];sum+=tt;
+    if(tt<score)below++;else if(tt>score)above++;
+  }
+  for(j=0;j<4;j++){popSec[O*4+j]=secScore[j];secSum[j]+=secScore[j];}
+  popSc[O]=score;popRaw[O]=raw;sum+=score;
+  var pct=[];
+  for(i=0;i<N;i++)pct.push((pop.pc[i]+u[i])/S);
+  var pe=null;
+  for(var w=0;w<=5;w++){
+    var sc2=[],h=0,ee=0,cnt=0,ps=[0,0,0,0];
+    for(i=0;i<O;i++)if(Math.abs(pop.praw[i]-raw)<=w){cnt++;sc2.push(popSc[i]);ee+=pop.plv[i*3];h+=pop.plv[i*3+2];for(j=0;j<4;j++)ps[j]+=popSec[i*4+j];}
+    if(cnt>=8||w===5){
+      sc2.sort(function(x,y){return x-y;});
+      pe={n:cnt,w:w,lo:sc2[0],hi:sc2[cnt-1],med:cnt?sc2[Math.floor(cnt/2)]:0,e:cnt?ee/cnt:0,h:cnt?h/cnt:0,sec:ps.map(function(x){return cnt?x/cnt:0;})};
+      break;
+    }
+  }
+  return {wt:WT,items:items,N:N,u:u,raw:raw,cA:cA,secRaw:secRaw,est:est,secScore:secScore,score:score,se:se,worth:worth,ord:ord,run:run,blocks:blocks,
+    popSc:popSc,popRaw:popRaw,S:S,stride:Math.max(1,Math.floor(O/2500)),rank:above+1,pctBelow:below/S*100,mean:sum/S,
+    secMean:secSum.map(function(x){return x/S;}),secPct:secBelow.map(function(x){return x/S*100;}),pct:pct,pe:pe};
+}
+
+/* ---------- drawing ---------- */
+function W(id){return Math.max(280,$(id).clientWidth||340);}
+function svg(w,h,inner,label){return '<svg viewBox="0 0 '+w+' '+h+'" width="'+w+'" height="'+h+'" role="img" aria-label="'+label+'">'+inner+'</svg>';}
+function niceStep(range,target){var raw=range/target,pw=Math.pow(10,Math.floor(Math.log10(raw))),f=raw/pw;return (f<=1?1:f<=2?2:f<=5?5:10)*pw;}
+var XL=[1,30,60,90,120];
+
+function chWorth(R){
+  var w=W('cWorth'),h=200,ml=34,mr=6,mt=8,mb=24,pw=w-ml-mr,n=R.N,bw=pw/n,half=(h-mt-mb)/2,mid=mt+half,i,p;
+  var maxW=1;for(i=0;i<n;i++)if(R.worth[i]>maxW)maxW=R.worth[i];
+  maxW*=1.08;
+  var s='',step=[5,10,20,25,50,100].filter(function(x){return x>=maxW/2;})[0]||100;
+  [step,2*step].forEach(function(tk){
+    if(tk<=maxW){
+      var y1=mid-tk/maxW*half,y2=mid+tk/maxW*half;
+      s+='<line class="gl" x1="'+ml+'" x2="'+(w-mr)+'" y1="'+y1+'" y2="'+y1+'"/><line class="gl" x1="'+ml+'" x2="'+(w-mr)+'" y1="'+y2+'" y2="'+y2+'"/>';
+      s+='<text class="tx" x="'+(ml-5)+'" y="'+(y1+3.5)+'" text-anchor="end">+'+tk+'</text><text class="tx" x="'+(ml-5)+'" y="'+(y2+3.5)+'" text-anchor="end">−'+tk+'</text>';
+    }
+  });
+  s+='<line x1="'+ml+'" x2="'+(w-mr)+'" y1="'+mid+'" y2="'+mid+'" style="stroke:var(--mute)"/>';
+  s+='<text class="tx" x="'+(ml-5)+'" y="'+(mid+3.5)+'" text-anchor="end">0</text>';
+  for(p=0;p<n;p++){
+    i=R.ord[p];var it=R.items[i],hh=R.worth[i]/maxW*half,x=ml+p*bw;
+    if(R.u[i])s+='<rect class="lv'+it.li+' f" x="'+x.toFixed(2)+'" y="'+(mid-hh).toFixed(2)+'" width="'+Math.max(1,bw-0.6).toFixed(2)+'" height="'+hh.toFixed(2)+'"/>';
+    else s+='<rect class="lv'+it.li+' f" style="opacity:.5" x="'+x.toFixed(2)+'" y="'+mid+'" width="'+Math.max(1,bw-0.6).toFixed(2)+'" height="'+hh.toFixed(2)+'"/>';
+  }
+  [30,60,90].forEach(function(q){s+='<line x1="'+(ml+q*bw)+'" x2="'+(ml+q*bw)+'" y1="'+mt+'" y2="'+(h-mb)+'" style="stroke:var(--mute);stroke-dasharray:3 3;opacity:.7"/>';});
+  XL.forEach(function(q){s+='<text class="tx" x="'+(ml+(q-0.5)*bw)+'" y="'+(h-8)+'" text-anchor="middle">'+q+'</text>';});
+  $('cWorth').innerHTML=svg(w,h,s,'Số điểm mỗi câu đáng giá đối với thí sinh Lâm');
+}
+
+function chRunWt(R){
+  var w=W('cRun'),h=220,ml=40,mr=12,mt=12,mb=26,n=R.N,i;
+  var sx=function(q){return ml+(q-1)/(n-1)*(w-ml-mr);},sy=function(v){return h-mb-v/1200*(h-mb-mt);},s='';
+  for(var v=0;v<=1200;v+=200)s+='<line class="gl" x1="'+ml+'" x2="'+(w-mr)+'" y1="'+sy(v)+'" y2="'+sy(v)+'"/><text class="tx" x="'+(ml-5)+'" y="'+(sy(v)+3.5)+'" text-anchor="end">'+fmt(v)+'</text>';
+  [30,60,90].forEach(function(q){s+='<line x1="'+sx(q+0.5)+'" x2="'+sx(q+0.5)+'" y1="'+mt+'" y2="'+(h-mb)+'" style="stroke:var(--mute);stroke-dasharray:3 3;opacity:.7"/>';});
+  XL.forEach(function(q){s+='<text class="tx" x="'+sx(q)+'" y="'+(h-8)+'" text-anchor="middle">'+q+'</text>';});
+  var top='',bot='',cap='',ln='';
+  for(i=0;i<n;i++){var x=sx(i+1).toFixed(1);top+=(i?'L':'M')+x+','+sy(R.run[i].cap).toFixed(1);cap+=(i?'L':'M')+x+','+sy(R.run[i].cap).toFixed(1);ln+=(i?'L':'M')+x+','+sy(R.run[i].s).toFixed(1);}
+  for(i=n-1;i>=0;i--)bot+='L'+sx(i+1).toFixed(1)+','+sy(R.run[i].s).toFixed(1);
+  s+='<path d="'+top+bot+'Z" style="fill:var(--hard);opacity:.18"/>';
+  s+='<path d="'+cap+'" style="fill:none;stroke:var(--mute);stroke-dasharray:4 4"/>';
+  s+='<path d="'+ln+'" style="fill:none;stroke:var(--accent);stroke-width:2"/>';
+  s+='<circle cx="'+sx(n)+'" cy="'+sy(R.score)+'" r="4" style="fill:var(--accent)"/>';
+  s+='<text class="txi" x="'+(sx(n)-8)+'" y="'+(sy(R.score)+16)+'" text-anchor="end">'+fmt(R.score)+'</text>';
+  s+='<text class="tx" x="'+(ml+4)+'" y="'+(sy(R.run[Math.min(n-1,20)].cap)-6)+'">điểm tối đa có thể đến câu đó</text>';
+  $('cRun').innerHTML=svg(w,h,s,'Điểm tích lũy của thí sinh Lâm so với điểm tối đa qua bài thi');
+}
+function chRun(R){
+  if(R.wt){chRunWt(R);return;}
+  var w=W('cRun'),h=220,ml=40,mr=12,mt=12,mb=26,i,n=R.N;
+  var vals=R.run.map(function(r){return r.s;}).concat([R.raw*10,R.score]);
+  var ymin=Math.max(0,Math.floor((Math.min.apply(null,vals)-40)/50)*50),ymax=Math.min(1200,Math.ceil((Math.max.apply(null,vals)+40)/50)*50);
+  if(ymax-ymin<200)ymax=ymin+200;
+  var sx=function(q){return ml+(q-1)/(n-1)*(w-ml-mr);},sy=function(v){return h-mb-(v-ymin)/(ymax-ymin)*(h-mb-mt);};
+  var s='<defs><clipPath id="clipT"><rect x="'+ml+'" y="'+mt+'" width="'+(w-ml-mr)+'" height="'+(h-mb-mt)+'"/></clipPath></defs>';
+  var step=(ymax-ymin)<=400?50:100;
+  for(var v=Math.ceil(ymin/step)*step;v<=ymax;v+=step)s+='<line class="gl" x1="'+ml+'" x2="'+(w-mr)+'" y1="'+sy(v)+'" y2="'+sy(v)+'"/><text class="tx" x="'+(ml-5)+'" y="'+(sy(v)+3.5)+'" text-anchor="end">'+v+'</text>';
+  [30,60,90].forEach(function(q){s+='<line x1="'+sx(q+0.5)+'" x2="'+sx(q+0.5)+'" y1="'+mt+'" y2="'+(h-mb)+'" style="stroke:var(--mute);stroke-dasharray:3 3;opacity:.7"/>';});
+  XL.forEach(function(q){s+='<text class="tx" x="'+sx(q)+'" y="'+(h-8)+'" text-anchor="middle">'+q+'</text>';});
+  var up='',dn='';
+  for(i=0;i<n;i++){up+=(i?'L':'M')+sx(i+1).toFixed(1)+','+sy(R.run[i].hi).toFixed(1);}
+  for(i=n-1;i>=0;i--){dn+='L'+sx(i+1).toFixed(1)+','+sy(R.run[i].lo).toFixed(1);}
+  s+='<g clip-path="url(#clipT)"><path d="'+up+dn+'Z" style="fill:var(--accent);opacity:.16"/>';
+  var ln='';for(i=0;i<n;i++)ln+=(i?'L':'M')+sx(i+1).toFixed(1)+','+sy(R.run[i].s).toFixed(1);
+  s+='<line x1="'+ml+'" x2="'+(w-mr)+'" y1="'+sy(R.raw*10)+'" y2="'+sy(R.raw*10)+'" style="stroke:var(--mute);stroke-dasharray:4 4"/>';
+  s+='<path d="'+ln+'" style="fill:none;stroke:var(--accent);stroke-width:2"/></g>';
+  s+='<text class="tx" x="'+(ml+4)+'" y="'+(sy(R.raw*10)-5)+'">đếm thẳng '+fmt(R.raw*10)+'</text>';
+  s+='<circle cx="'+sx(n)+'" cy="'+sy(R.run[n-1].s)+'" r="4" style="fill:var(--accent)"/>';
+  s+='<text class="txi" x="'+(sx(n)-8)+'" y="'+(sy(R.run[n-1].s)-9)+'" text-anchor="end">'+fmt(R.score)+'</text>';
+  $('cRun').innerHTML=svg(w,h,s,'Điểm tổng của thí sinh Lâm tích lũy qua bài thi');
+}
+
+function chBlocks(R){
+  var w=W('cBlocks'),h=150,ml=28,mr=6,mt=8,mb=22,nb=R.blocks.length,bw=(w-ml-mr)/nb;
+  var sy=function(v){return h-mb-v/10*(h-mb-mt);},s='';
+  [0,5,10].forEach(function(v){s+='<line class="gl" x1="'+ml+'" x2="'+(w-mr)+'" y1="'+sy(v)+'" y2="'+sy(v)+'"/><text class="tx" x="'+(ml-5)+'" y="'+(sy(v)+3.5)+'" text-anchor="end">'+v+'</text>';});
+  [3,6,9].forEach(function(b){s+='<line x1="'+(ml+b*bw)+'" x2="'+(ml+b*bw)+'" y1="'+mt+'" y2="'+(h-mb)+'" style="stroke:var(--mute);stroke-dasharray:3 3;opacity:.7"/>';});
+  R.blocks.forEach(function(b,i){
+    var x=ml+i*bw+bw*0.18,ww=bw*0.64;
+    s+='<rect x="'+x.toFixed(1)+'" y="'+sy(b.act)+'" width="'+ww.toFixed(1)+'" height="'+(sy(0)-sy(b.act)).toFixed(1)+'" rx="2" style="fill:var(--accent);opacity:.75"/>';
+    s+='<circle cx="'+(ml+i*bw+bw/2).toFixed(1)+'" cy="'+sy(b.exp).toFixed(1)+'" r="3.6" style="fill:var(--panel);stroke:var(--ink);stroke-width:1.6"/>';
+    s+='<text class="tx" x="'+(ml+i*bw+bw/2).toFixed(1)+'" y="'+(h-7)+'" text-anchor="middle">'+(i*10+1)+'</text>';
+  });
+  $('cBlocks').innerHTML=svg(w,h,s,'Số câu đúng mỗi khối mười câu so với kỳ vọng');
+}
+
+function chScatter(R){
+  var w=W('cScatter'),h=250,ml=40,mr=10,mt=10,mb=28,i;
+  var sx=function(v){return ml+v/120*(w-ml-mr);},sy=function(v){return h-mb-v/1200*(h-mb-mt);},s='';
+  for(var v=0;v<=1200;v+=200)s+='<line class="gl" x1="'+ml+'" x2="'+(w-mr)+'" y1="'+sy(v)+'" y2="'+sy(v)+'"/><text class="tx" x="'+(ml-5)+'" y="'+(sy(v)+3.5)+'" text-anchor="end">'+v+'</text>';
+  for(var q=0;q<=120;q+=20)s+='<text class="tx" x="'+sx(q)+'" y="'+(h-9)+'" text-anchor="middle">'+q+'</text>';
+  s+='<rect x="'+sx(R.raw-0.5)+'" y="'+mt+'" width="'+Math.max(2,sx(1)-sx(0))+'" height="'+(h-mb-mt)+'" style="fill:var(--accent);opacity:.18"/>';
+  s+='<line x1="'+sx(0)+'" y1="'+sy(0)+'" x2="'+sx(120)+'" y2="'+sy(1200)+'" style="stroke:var(--mute);stroke-dasharray:4 4"/>';
+  for(i=0;i<R.S-1;i+=R.stride)s+='<circle cx="'+sx(R.popRaw[i]).toFixed(1)+'" cy="'+sy(R.popSc[i]).toFixed(1)+'" r="1.7" style="fill:var(--ink);opacity:.28"/>';
+  s+='<circle cx="'+sx(R.raw)+'" cy="'+sy(R.score)+'" r="6" style="fill:var(--accent);stroke:var(--panel);stroke-width:2"/>';
+  var right=R.raw>80;
+  s+='<text class="txi" x="'+(sx(R.raw)+(right?-10:10))+'" y="'+(sy(R.score)-9)+'" text-anchor="'+(right?'end':'start')+'">Lâm</text>';
+  $('cScatter').innerHTML=svg(w,h,s,'Số câu đúng và điểm tổng của tất cả thí sinh');
+}
+
+function chHist(R){
+  var w=W('cHist'),h=200,ml=40,mr=8,mt=14,mb=26,nb=24,bins=new Array(nb).fill(0),i;
+  for(i=0;i<R.S;i++){var b=Math.min(nb-1,Math.floor(R.popSc[i]/50));bins[b]++;}
+  var mx=Math.max.apply(null,bins),step=niceStep(mx,3),top=Math.ceil(mx/step)*step;
+  var sx=function(v){return ml+v/1200*(w-ml-mr);},sy=function(v){return h-mb-v/top*(h-mb-mt);},s='';
+  for(var v=0;v<=top;v+=step)s+='<line class="gl" x1="'+ml+'" x2="'+(w-mr)+'" y1="'+sy(v)+'" y2="'+sy(v)+'"/><text class="tx" x="'+(ml-5)+'" y="'+(sy(v)+3.5)+'" text-anchor="end">'+fmt(v)+'</text>';
+  var ab=Math.min(nb-1,Math.floor(R.score/50));
+  bins.forEach(function(c,j){s+='<rect x="'+(sx(j*50)+0.8).toFixed(1)+'" y="'+sy(c).toFixed(1)+'" width="'+(sx(50)-sx(0)-1.6).toFixed(1)+'" height="'+(sy(0)-sy(c)).toFixed(1)+'" rx="1.5" style="fill:'+(j===ab?'var(--accent)':'var(--mute)')+';opacity:'+(j===ab?1:.4)+'"/>';});
+  for(var x=0;x<=1200;x+=200)s+='<text class="tx" x="'+sx(x)+'" y="'+(h-8)+'" text-anchor="middle">'+x+'</text>';
+  var right=R.score>800;
+  s+='<line x1="'+sx(R.score)+'" x2="'+sx(R.score)+'" y1="'+(mt-4)+'" y2="'+sy(0)+'" style="stroke:var(--ink);stroke-width:1.5"/>';
+  s+='<text class="txi" x="'+(sx(R.score)+(right?-5:5))+'" y="'+(mt+4)+'" text-anchor="'+(right?'end':'start')+'">Lâm: '+fmt(R.score)+'</text>';
+  $('cHist').innerHTML=svg(w,h,s,'Phân bố điểm tổng của các thí sinh');
+}
+
+function chItems(R){
+  var w=W('cItems'),h=230,ml=36,mr=10,mt=10,mb=30,i;
+  var bmin=-3,bmax=3,sx=function(v){return ml+(v-bmin)/(bmax-bmin)*(w-ml-mr);},sy=function(v){return h-mb-v/100*(h-mb-mt);},s='';
+  for(var v=0;v<=100;v+=25)s+='<line class="gl" x1="'+ml+'" x2="'+(w-mr)+'" y1="'+sy(v)+'" y2="'+sy(v)+'"/><text class="tx" x="'+(ml-5)+'" y="'+(sy(v)+3.5)+'" text-anchor="end">'+v+'%</text>';
+  for(var x=-3;x<=3;x++)s+='<text class="tx" x="'+sx(x)+'" y="'+(h-14)+'" text-anchor="middle">'+x+'</text>';
+  s+='<text class="tx" x="'+((ml+w-mr)/2)+'" y="'+(h-1)+'" text-anchor="middle">độ khó b (càng cao càng khó)</text>';
+  for(i=0;i<R.N;i++){
+    var it=R.items[i],cx=sx(Math.max(bmin,Math.min(bmax,it.b))).toFixed(1),cy=sy(R.pct[i]*100).toFixed(1);
+    s+=R.u[i]?'<circle class="lv'+it.li+' f" cx="'+cx+'" cy="'+cy+'" r="4"/>':'<circle class="lv'+it.li+' s" cx="'+cx+'" cy="'+cy+'" r="3.6"/>';
+  }
+  $('cItems').innerHTML=svg(w,h,s,'Tỷ lệ thí sinh làm đúng từng câu theo độ khó');
+}
+
+function table(R){
+  var rows='<tr><th>Mức độ</th><th>Thí sinh đúng</th><th>Lâm đúng</th><th>Giá trị câu đúng</th><th>Mất nếu sai</th></tr>';
+  for(var li=0;li<3;li++){
+    var pc=0,n=0,rs=0,rn=0,ms=0,mn=0;
+    for(var i=0;i<R.N;i++)if(R.items[i].li===li){n++;pc+=R.pct[i];if(R.u[i]){rs+=R.worth[i];rn++;}else{ms+=R.worth[i];mn++;}}
+    rows+='<tr class="lv'+li+'"><td><i style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--c);margin-right:6px"></i>'+LV[li].n+'</td><td>'+Math.round(pc/n*100)+'%</td><td>'+R.cA[li]+' / '+n+'</td><td>'+(rn?'+'+dec(rs/rn,1)+' điểm':'–')+'</td><td>'+(mn?'−'+dec(ms/mn,1)+' điểm':'–')+'</td></tr>';
+  }
+  $('lvTable').innerHTML=rows;
+}
+
+function secCards(R){
+  var h='';
+  for(var j=0;j<4;j++){
+    h+='<div class="secrow"><div class="sechd"><b>'+SEC[j].n+'</b><span>'+R.secRaw[j]+'/30 câu · <b>'+fmt(R.secScore[j])+'</b>/300 điểm</span></div>'
+      +'<div class="track"><div class="fill" style="width:'+(R.secScore[j]/3).toFixed(1)+'%"></div><div class="tick" style="left:'+(R.secMean[j]/3).toFixed(1)+'%"></div></div>'
+      +'<div class="secft">Trung bình cả nhóm '+fmt(R.secMean[j])+' điểm · phân vị '+Math.round(R.secPct[j])+'</div></div>';
+  }
+  $('secCards').innerHTML=h;
+}
+
+function sheet(R){
+  var h='',row,c,p,i,it;
+  for(row=0;row<12;row++){
+    if(row%3===0){var j=row/3;h+='<div class="sechead">'+SEC[j].n+' · câu '+(j*30+1)+'–'+(j*30+30)+'</div>';}
+    h+='<div class="rowlab">'+(row*10+1)+'–'+(row*10+10)+'</div>';
+    for(c=0;c<10;c++){
+      p=row*10+c;i=R.ord[p];it=R.items[i];
+      h+='<button type="button" class="bub lv'+it.li+' '+(R.u[i]?'ok':'no')+'" data-p="'+p+'" aria-pressed="'+(sel===p)+'" aria-label="Câu '+(p+1)+', '+SEC[it.sec].n+', '+LV[it.li].n+', '+(R.u[i]?'đúng':'sai')+'">'+(p+1)+'</button>';
+    }
+  }
+  $('sheet').innerHTML=h;
+  detail(R);
+}
+
+function detail(R){
+  var d=$('detail');
+  if(sel===null){d.textContent='Chạm vào một ô để xem bao nhiêu thí sinh làm đúng câu đó và câu đó đáng giá bao nhiêu điểm.';return;}
+  var i=R.ord[sel],it=R.items[i],pw=Math.round(R.pct[i]*100),wv=R.worth[i];
+  var t='<b>Câu '+(sel+1)+'</b> ('+SEC[it.sec].n+'), mức '+LV[it.li].n.toLowerCase()+' (b = '+dec(it.b,2)+'; a = '+dec(it.a,2)+'). '+pw+'% trong '+fmt(R.S)+' thí sinh làm đúng câu này. ';
+  if(R.u[i])t+='Lâm làm đúng, câu này cộng khoảng <b>+'+dec(wv,1)+' điểm</b> vào điểm tổng.';
+  else t+='Lâm làm sai. Nếu làm đúng sẽ được cộng khoảng <b>+'+dec(wv,1)+' điểm</b>.';
+  d.innerHTML=t;
+}
+
+function peerText(R){
+  var pe=R.pe,el=$('peerText');
+  if(!pe||pe.n<3){el.textContent='Có quá ít thí sinh khác cùng số câu đúng trong lần chạy này. Hãy thử số câu đúng gần mức giữa hơn hoặc chạy mô phỏng mới.';return;}
+  var who=pe.w===0?'Trong '+fmt(pe.n)+' thí sinh khác cũng làm đúng '+R.raw+'/120 câu':'Trong '+fmt(pe.n)+' thí sinh khác làm đúng từ '+(R.raw-pe.w)+' đến '+(R.raw+pe.w)+'/120 câu';
+  el.innerHTML=who+', điểm tổng dao động từ <b>'+fmt(pe.lo)+'</b> đến <b>'+fmt(pe.hi)+'</b> (mức giữa: '+fmt(pe.med)+'). Điểm '+fmt(R.score)+' của Lâm '+(R.score>=pe.med?'cao hơn':'thấp hơn')+' mức giữa đó. Mẫu trả lời khác nhau: Lâm đúng <b>'+R.cA[2]+'</b>/40 câu khó (nhóm này trung bình '+dec(pe.h,1)+') và <b>'+R.cA[0]+'</b>/40 câu dễ (trung bình '+dec(pe.e,1)+'). Khi bật đoán mò, một mẫu nhất quán (đúng câu dễ, sai câu khó) được điểm cao hơn mẫu giống đoán mò (sai câu dễ, trúng câu khó). Điểm trung bình theo phần của nhóm này: '+SEC.map(function(s,j){return s.n+' '+fmt(pe.sec[j]);}).join(', ')+'.';
+}
+
+function hero(R){
+  $('tR').textContent=R.raw;
+  $('score').textContent=fmt(R.score);
+  $('heroLine').innerHTML='Điểm V-ACT mô phỏng của thí sinh Lâm, làm đúng <b>'+R.raw+'/120</b> câu. Nếu chỉ đếm số câu thì được '+fmt(R.raw*10)+', nhưng IRT không tính mọi câu như nhau, và điểm được tính riêng cho từng phần 30 câu rồi cộng lại. Điểm trung bình cả nhóm là '+fmt(R.mean)+'.';
+  $('sRaw').textContent=fmt(R.raw*10);
+  $('sPct').textContent='Phân vị '+Math.round(R.pctBelow);
+  $('sRank').textContent='hạng '+fmt(R.rank)+' / '+fmt(R.S);
+  $('sSE').textContent='±'+fmt(R.se);
+  $('sMean').textContent=fmt(R.mean);
+}
+
+function charts(R){chWorth(R);chRun(R);chBlocks(R);chScatter(R);chHist(R);chItems(R);}
+
+var seq=0;
+function render(m){
+  var u=makeA(m,st.R,st.gamma,st.seed,PROF[st.prof]);
+  var R=analyze(m,u);
+  last=R;
+  hero(R);secCards(R);sheet(R);table(R);peerText(R);charts(R);
+  Array.prototype.forEach.call(document.querySelectorAll('.nS'),function(el){el.textContent=fmt(R.S);});
+  $('scNote').textContent=R.stride>1?'Biểu đồ chỉ vẽ một mẫu khoảng '+fmt(Math.floor((R.S-1)/R.stride))+' thí sinh để tải nhanh. Các số liệu và phân vị tính trên toàn bộ '+fmt(R.S)+' thí sinh.':'';
+  $('seedOut').textContent=st.seed;
+  $('runSub').textContent=R.wt?'Đường xanh là điểm Lâm tích lũy được sau mỗi câu. Đường nét đứt là điểm tối đa có thể có đến câu đó. Vùng đỏ giữa hai đường là số điểm đã mất do làm sai.':'Điểm tổng được ước lượng lại sau mỗi câu. Vùng tô mờ là ±1 sai số chuẩn và thu hẹp dần khi có thêm câu trả lời. Phần chưa làm được tính ở mức của một thí sinh trung bình cho đến khi có câu trả lời.';
+  $('worthSub').textContent=R.wt?'Mỗi câu có số điểm cố định: câu khó và câu phân biệt tốt được nhiều điểm hơn (trung bình 10 điểm mỗi câu). Cột hướng lên: điểm Lâm nhận được. Cột hướng xuống: điểm Lâm mất do làm sai.':"Cột hướng lên: số điểm một câu trả lời đúng cộng vào điểm tổng của Lâm. Cột hướng xuống: số điểm Lâm mất do làm sai. Trọng số của một câu phụ thuộc vào việc câu đó phân biệt thí sinh giỏi và yếu tốt đến đâu (a). Khi bật đoán mò, nó còn phụ thuộc vào khả năng đoán trúng may mắn, nên câu đúng ở mức dễ và trung bình có giá trị hơn câu đúng ở mức khó.";
+}
+function update(){
+  var m=getModel(st.seed,st.guess),my=++seq;
+  ensurePop(m,st.S,function(){if(my===seq)render(m);});
+}
+
+/* ---------- events ---------- */
+var pend=null;
+function later(){if(pend)cancelAnimationFrame(pend);pend=requestAnimationFrame(function(){pend=null;update();});}
+$('raw').addEventListener('input',function(e){st.R=+e.target.value;$('rawOut').textContent=st.R;later();});
+$('prof').addEventListener('change',function(e){st.prof=e.target.value;update();});
+$('style').addEventListener('change',function(e){st.gamma=+e.target.value;update();});
+$('order').addEventListener('change',function(e){st.order=e.target.value;sel=null;update();});
+function syncMode(){$('center').disabled=st.mode!=='lin';$('per').disabled=st.mode!=='lin';$('ratio').disabled=st.mode!=='wt';}
+$('mode').addEventListener('change',function(e){st.mode=e.target.value;syncMode();update();});
+$('ratio').addEventListener('input',function(e){st.ratio=+e.target.value;$('ratioOut').textContent=dec(st.ratio,1);later();});
+function setChips(){Array.prototype.forEach.call(document.querySelectorAll('.chip'),function(c){c.setAttribute('aria-pressed',String(+c.getAttribute('data-n')===st.S));});}
+$('nstu').addEventListener('change',function(e){var v=Math.round(+e.target.value);if(!isFinite(v))v=1000;st.S=Math.max(100,Math.min(150000,v));e.target.value=st.S;setChips();update();});
+$('chips').addEventListener('click',function(e){var c=e.target.closest('.chip');if(!c)return;st.S=+c.getAttribute('data-n');$('nstu').value=st.S;setChips();update();});
+$('guess').addEventListener('change',function(e){st.guess=e.target.checked;update();});
+$('center').addEventListener('change',function(e){var v=+e.target.value;if(!isFinite(v))v=600;st.center=Math.max(200,Math.min(900,v));e.target.value=st.center;update();});
+$('per').addEventListener('change',function(e){var v=+e.target.value;if(!isFinite(v))v=150;st.k=Math.max(50,Math.min(300,v));e.target.value=st.k;update();});
+$('reseed').addEventListener('click',function(){st.seed=Math.floor(Math.random()*90000)+1000;sel=null;update();});
+$('sheet').addEventListener('click',function(e){
+  var b=e.target.closest('.bub');if(!b||!last)return;
+  sel=+b.getAttribute('data-p');
+  Array.prototype.forEach.call($('sheet').querySelectorAll('.bub'),function(x){x.setAttribute('aria-pressed',String(+x.getAttribute('data-p')===sel));});
+  detail(last);
+});
+var rt=null;
+window.addEventListener('resize',function(){clearTimeout(rt);rt=setTimeout(function(){if(last)charts(last);},120);});
+
+syncMode();
+update();
+})();
+</script>
+</body>
+</html>
