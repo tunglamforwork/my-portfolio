@@ -122,7 +122,7 @@ ul.tight li{margin-bottom:5px}
 
 <section class="card">
   <h2>Thay đổi kịch bản</h2>
-  <p class="sub">Mọi thứ bên dưới cập nhật ngay khi bạn thay đổi.</p>
+  <p class="sub">Mọi thứ bên dưới cập nhật ngay khi bạn thay đổi, trừ số thí sinh: chọn xong hãy bấm "Chạy mô phỏng mới".</p>
   <div class="controls">
     <div class="full pstat">
       <label for="nstu">Số thí sinh tham gia: <span class="nS">1.000</span></label>
@@ -133,6 +133,7 @@ ul.tight li{margin-bottom:5px}
         <button type="button" class="chip" data-n="50000" aria-pressed="false">50.000</button>
         <button type="button" class="chip" data-n="120000" aria-pressed="false">120.000</button>
       </div>
+      <small id="nHint" aria-live="polite"></small>
       <div id="popStatus" aria-live="polite"></div>
     </div>
     <div class="full">
@@ -247,7 +248,7 @@ ul.tight li{margin-bottom:5px}
   </ul>
   <p style="margin-top:10px">Mô phỏng ước lượng một θ riêng cho từng phần 30 câu, bằng trung bình hậu nghiệm với phân phối chuẩn tắc làm tiên nghiệm (EAP). Có ba cách chấm điểm, chọn ở ô "Cách quy đổi điểm".</p>
   <ul class="tight">
-    <li><b>Trọng số theo độ khó (mặc định).</b> Mỗi câu có số điểm cố định tỷ lệ với độ phân biệt (a) và tăng theo độ khó (b); mỗi phần chia đều để cộng đủ 300. Câu khó đúng thì được nhiều điểm hơn, sai câu dễ mất ít điểm hơn khi sai câu khó. Thanh trượt quyết định câu khó đáng giá gấp mấy lần câu dễ. Đây là giả định của mô phỏng để bám theo cách nói "mỗi câu có trọng số khác nhau tùy độ khó"; cách này không giảm điểm cho việc trúng câu khó do đoán mò như IRT thật.</li>
+    <li><b>Trọng số theo độ khó (mặc định).</b> Mỗi câu có số điểm cố định tỷ lệ với độ phân biệt (a) và tăng theo độ khó (b); mỗi phần chia đều để cộng đủ 300. Câu khó đúng thì được nhiều điểm hơn, sai câu dễ mất ít điểm hơn khi sai câu khó. Thanh trượt quyết định câu khó đáng giá gấp mấy lần câu dễ. Khi bật đoán mò, mỗi câu đúng chỉ được tính phần điểm ứng với khả năng thí sinh thật sự biết câu đó: trọng số × (1 − c / P(θ)), với θ là năng lực ước lượng của phần đó. Vì vậy người sai nhiều câu dễ (θ thấp) mà trúng câu khó sẽ được rất ít điểm cho các câu khó đó, giống IRT thật. Mỗi phần được co giãn để đúng cả 30 câu vẫn được 300. Đây là giả định của mô phỏng để bám theo cách nói "mỗi câu có trọng số khác nhau tùy độ khó".</li>
     <li><b>Theo số câu đúng kỳ vọng.</b> Điểm phần = 10 × số câu mà một thí sinh có năng lực θ đó được kỳ vọng làm đúng trên phần này (đường cong điểm thật của đề). Thí sinh đúng 27/30 câu thường được khoảng 260 đến 280 điểm. Phần điểm trên 230 được kéo giãn nhẹ để đúng cả 30 câu cho đúng 300 điểm (và đúng cả 120 câu cho 1.200). Trả lời trúng các câu phân biệt tốt hoặc khó thì θ cao hơn, nên điểm cao hơn "số câu × 10".</li>
     <li><b>Tuyến tính theo θ.</b> Điểm phần = <code>trung tâm/4 + (số điểm/4) × θ</code>, giới hạn 0–300. Cách này neo vào cả nhóm (trung bình 600), nên thí sinh giỏi bị kéo thấp hơn số câu × 10 khá nhiều.</li>
   </ul>
@@ -396,17 +397,23 @@ function makeA(m,R,gamma,seed,off){
 var st={S:1000,seed:2026,R:84,gamma:1,prof:'bal',order:'mixed',guess:true,mode:'wt',ratio:1.4,center:600,k:150};
 var last=null,sel=null;
 
+/* fixed item weights, discounted by the chance a correct answer was a lucky guess at the
+   section θ: credit = w·(1 − c/P(θ)). Each section is rescaled so all 30 correct = 300. */
 function weights(m,ratio){
-  if(m.wk&&m.wk.ratio===ratio)return m.wk.w;
-  var lam=Math.log(ratio)/2.55,N=m.N,w=new Float64Array(N),j,k,i;
+  if(m.wk&&m.wk.ratio===ratio)return m.wk;
+  var lam=Math.log(ratio)/2.55,N=m.N,w=new Float64Array(N),mx=new Float64Array(N),sc=[],j,k,i;
   for(j=0;j<4;j++){
-    var s=0;
-    for(k=0;k<PER;k++){i=j*PER+k;w[i]=m.items[i].a*Math.exp(lam*m.items[i].b);s+=w[i];}
-    for(k=0;k<PER;k++){i=j*PER+k;w[i]*=300/s;}
+    var s=0,ll=new Float64Array(G),g;
+    for(k=0;k<PER;k++){i=j*PER+k;w[i]=m.items[i].a*Math.exp(lam*m.items[i].b);s+=w[i];for(g=0;g<G;g++)ll[g]+=m.LP[i][g];}
+    var tA=eap(ll).t,s2=0;
+    for(k=0;k<PER;k++){i=j*PER+k;w[i]*=300/s;mx[i]=w[i]*(1-m.items[i].c/pf(m.items[i],tA));s2+=mx[i];}
+    sc.push(300/s2);
+    for(k=0;k<PER;k++)mx[j*PER+k]*=300/s2;
   }
-  m.wk={ratio:ratio,w:w};
-  return w;
+  m.wk={ratio:ratio,w:w,mx:mx,sc:sc};
+  return m.wk;
 }
+function credit(m,wk,i,t){var it=m.items[i];return wk.w[i]*wk.sc[it.sec]*(1-it.c/pf(it,t));}
 
 function analyze(m,u){
   var items=m.items,N=m.N,LP=m.LP,LQ=m.LQ,pop=m.pop,O=pop.S-1,S=O+1,i,g,j,p;
@@ -427,10 +434,11 @@ function analyze(m,u){
     if(u[i]){raw++;cA[items[i].li]++;secRaw[items[i].sec]++;}
   }
   var est=secLL.map(function(l,jj){return eap(l,m.tcc[jj],PR);}),secScore=est.map(function(e,jj){return val(e,jj);});
-  if(WT){for(j=0;j<4;j++){secScore[j]=0;}for(i=0;i<N;i++)if(u[i])secScore[items[i].sec]+=wv[i];}
+  var cr=WT?new Float64Array(N):null;
+  if(WT){for(j=0;j<4;j++){secScore[j]=0;}for(i=0;i<N;i++){cr[i]=credit(m,wv,i,est[items[i].sec].t);if(u[i])secScore[items[i].sec]+=cr[i];}}
   var score=secScore[0]+secScore[1]+secScore[2]+secScore[3];
   var se;
-  if(WT){var v2=0;for(i=0;i<N;i++){var pp=pf(items[i],est[items[i].sec].t);v2+=wv[i]*wv[i]*pp*(1-pp);}se=Math.sqrt(v2);}
+  if(WT){var v2=0;for(i=0;i<N;i++){var pp=pf(items[i],est[items[i].sec].t);v2+=cr[i]*cr[i]*pp*(1-pp);}se=Math.sqrt(v2);}
   else se=Math.sqrt(est.reduce(function(acc,e,jj){return acc+Math.pow(sdv(e,jj),2);},0));
   var worth=new Array(N),tmp=new Float64Array(G);
   for(i=0;i<N;i++){
@@ -439,7 +447,14 @@ function analyze(m,u){
     for(g=0;g<G;g++)tmp[g]=lj[g]-cur[g]+alt[g];
     worth[i]=Math.abs(secScore[j]-val(eap(tmp,m.tcc[j],PR),j));
   }
-  if(WT)for(i=0;i<N;i++)worth[i]=wv[i];
+  if(WT)for(i=0;i<N;i++){
+    if(u[i]){worth[i]=cr[i];continue;}
+    j=items[i].sec;var lj2=secLL[j];
+    for(g=0;g<G;g++)tmp[g]=lj2[g]-LQ[i][g]+LP[i][g];
+    var t2=eap(tmp).t,s3=0;
+    for(k=j*PER;k<j*PER+PER;k++)if(u[k]||k===i)s3+=credit(m,wv,k,t2);
+    worth[i]=s3-secScore[j];
+  }
   var ord=[],k;
   for(j=0;j<4;j++){
     var idx=[];for(k=0;k<PER;k++)idx.push(j*PER+k);
@@ -458,7 +473,7 @@ function analyze(m,u){
     var sd=Math.sqrt(v);
     run.push({s:tot,lo:tot-sd,hi:tot+sd});
   }
-  if(WT){run=[];var ce=0,cm=0;for(p=0;p<N;p++){i=ord[p];ce+=wv[i]*u[i];cm+=wv[i];run.push({s:ce,lo:ce,hi:ce,cap:cm});}}
+  if(WT){run=[];var ce=0,cm=0;for(p=0;p<N;p++){i=ord[p];ce+=cr[i]*u[i];cm+=wv.mx[i];run.push({s:ce,lo:ce,hi:ce,cap:cm});}}
   var blocks=[];
   for(var b=0;b<N/10;b++){
     var act=0,exp=0;
@@ -467,7 +482,7 @@ function analyze(m,u){
   }
   if(WT&&pop.wkey!==st.ratio){
     var wsc=new Float32Array(O*4);
-    for(i=0;i<O;i++){var base=i*N;for(j=0;j<4;j++){var s2=0;for(k=0;k<PER;k++){var ii=j*PER+k;s2+=wv[ii]*pop.resp[base+ii];}wsc[i*4+j]=s2;}}
+    for(i=0;i<O;i++){var base=i*N;for(j=0;j<4;j++){var s2=0,tj=pop.psecT[i*4+j];for(k=0;k<PER;k++){var ii=j*PER+k;if(pop.resp[base+ii])s2+=credit(m,wv,ii,tj);}wsc[i*4+j]=s2;}}
     pop.wsc=wsc;pop.wkey=st.ratio;
   }
   var popSc=new Float64Array(S),popRaw=new Int16Array(S),popSec=new Float64Array(S*4);
@@ -699,7 +714,7 @@ function render(m){
   $('scNote').textContent=R.stride>1?'Biểu đồ chỉ vẽ một mẫu khoảng '+fmt(Math.floor((R.S-1)/R.stride))+' thí sinh để tải nhanh. Các số liệu và phân vị tính trên toàn bộ '+fmt(R.S)+' thí sinh.':'';
   $('seedOut').textContent=st.seed;
   $('runSub').textContent=R.wt?'Đường xanh là điểm Lâm tích lũy được sau mỗi câu. Đường nét đứt là điểm tối đa có thể có đến câu đó. Vùng đỏ giữa hai đường là số điểm đã mất do làm sai.':'Điểm tổng được ước lượng lại sau mỗi câu. Vùng tô mờ là ±1 sai số chuẩn và thu hẹp dần khi có thêm câu trả lời. Phần chưa làm được tính ở mức của một thí sinh trung bình cho đến khi có câu trả lời.';
-  $('worthSub').textContent=R.wt?'Mỗi câu có số điểm cố định: câu khó và câu phân biệt tốt được nhiều điểm hơn (trung bình 10 điểm mỗi câu). Cột hướng lên: điểm Lâm nhận được. Cột hướng xuống: điểm Lâm mất do làm sai.':"Cột hướng lên: số điểm một câu trả lời đúng cộng vào điểm tổng của Lâm. Cột hướng xuống: số điểm Lâm mất do làm sai. Trọng số của một câu phụ thuộc vào việc câu đó phân biệt thí sinh giỏi và yếu tốt đến đâu (a). Khi bật đoán mò, nó còn phụ thuộc vào khả năng đoán trúng may mắn, nên câu đúng ở mức dễ và trung bình có giá trị hơn câu đúng ở mức khó.";
+  $('worthSub').textContent=R.wt?'Câu khó và câu phân biệt tốt có trọng số cao hơn (trung bình 10 điểm mỗi câu). Khi bật đoán mò, câu đúng mà có khả năng chỉ là đoán trúng (câu quá khó so với năng lực của Lâm ở phần đó) được giảm điểm. Cột hướng lên: điểm Lâm nhận được. Cột hướng xuống: điểm Lâm mất do làm sai.':"Cột hướng lên: số điểm một câu trả lời đúng cộng vào điểm tổng của Lâm. Cột hướng xuống: số điểm Lâm mất do làm sai. Trọng số của một câu phụ thuộc vào việc câu đó phân biệt thí sinh giỏi và yếu tốt đến đâu (a). Khi bật đoán mò, nó còn phụ thuộc vào khả năng đoán trúng may mắn, nên câu đúng ở mức dễ và trung bình có giá trị hơn câu đúng ở mức khó.";
 }
 function update(){
   var m=getModel(st.seed,st.guess),my=++seq;
@@ -716,13 +731,18 @@ $('order').addEventListener('change',function(e){st.order=e.target.value;sel=nul
 function syncMode(){$('center').disabled=st.mode!=='lin';$('per').disabled=st.mode!=='lin';$('ratio').disabled=st.mode!=='wt';}
 $('mode').addEventListener('change',function(e){st.mode=e.target.value;syncMode();update();});
 $('ratio').addEventListener('input',function(e){st.ratio=+e.target.value;$('ratioOut').textContent=dec(st.ratio,1);later();});
-function setChips(){Array.prototype.forEach.call(document.querySelectorAll('.chip'),function(c){c.setAttribute('aria-pressed',String(+c.getAttribute('data-n')===st.S));});}
-$('nstu').addEventListener('change',function(e){var v=Math.round(+e.target.value);if(!isFinite(v))v=1000;st.S=Math.max(100,Math.min(150000,v));e.target.value=st.S;setChips();update();});
-$('chips').addEventListener('click',function(e){var c=e.target.closest('.chip');if(!c)return;st.S=+c.getAttribute('data-n');$('nstu').value=st.S;setChips();update();});
+/* the student count is only staged here; it takes effect when "Chạy mô phỏng mới" is clicked */
+var pendS=st.S;
+function setChips(){
+  Array.prototype.forEach.call(document.querySelectorAll('.chip'),function(c){c.setAttribute('aria-pressed',String(+c.getAttribute('data-n')===pendS));});
+  $('nHint').textContent=pendS!==st.S?'Bấm "Chạy mô phỏng mới" để mô phỏng với '+fmt(pendS)+' thí sinh.':'';
+}
+$('nstu').addEventListener('change',function(e){var v=Math.round(+e.target.value);if(!isFinite(v))v=1000;pendS=Math.max(100,Math.min(150000,v));e.target.value=pendS;setChips();});
+$('chips').addEventListener('click',function(e){var c=e.target.closest('.chip');if(!c)return;pendS=+c.getAttribute('data-n');$('nstu').value=pendS;setChips();});
 $('guess').addEventListener('change',function(e){st.guess=e.target.checked;update();});
 $('center').addEventListener('change',function(e){var v=+e.target.value;if(!isFinite(v))v=600;st.center=Math.max(200,Math.min(900,v));e.target.value=st.center;update();});
 $('per').addEventListener('change',function(e){var v=+e.target.value;if(!isFinite(v))v=150;st.k=Math.max(50,Math.min(300,v));e.target.value=st.k;update();});
-$('reseed').addEventListener('click',function(){st.seed=Math.floor(Math.random()*90000)+1000;sel=null;update();});
+$('reseed').addEventListener('click',function(){st.S=pendS;setChips();st.seed=Math.floor(Math.random()*90000)+1000;sel=null;update();});
 $('sheet').addEventListener('click',function(e){
   var b=e.target.closest('.bub');if(!b||!last)return;
   sel=+b.getAttribute('data-p');
